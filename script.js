@@ -186,7 +186,7 @@ function animate() {
 
 	nextFrame = performance.now();
 	if(nextFrame - lastFrame > 0) {
-		fpsEl.innerText = 1000 / (nextFrame - lastFrame);
+		fpsEl.innerText = (1000 / (nextFrame - lastFrame)).toFixed(1);
 		lastFrame = nextFrame;
 	}
     requestAnimationFrame(animate);
