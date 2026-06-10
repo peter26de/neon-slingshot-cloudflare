@@ -52,17 +52,20 @@ function initAudio() {
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreEl = document.getElementById('score');
+const fpsEl = document.getElementById('fps');
 
 let width, height;
 let score = 0;
+let 
 let timeScale = 1.0;
 let isDragging = false;
 let mouse = { x: 0, y: 0 };
 
 const player = { x: 0, y: 0, vx: 0, vy: 0, radius: 12, isLaunching: false, color: '#38bdf8' };
 let enemies = [];
-let particles = [];
 let lastTime = Date.now();
+let lastFrame = performance.now();
+let nextFrame = performance.now();
 
 class Enemy {
 	constructor() { this.reset(); }
@@ -181,7 +184,12 @@ function animate() {
 	ctx.shadowBlur = 20;
 	ctx.shadowColor = player.color;
 	ctx.fill();
-	
+
+	nextFrame = performance.now();
+	if(nextFrame - lastFrame > 0) {
+		fpsEl.innerText = 1000 / (nextFrame - lastFrame);
+		lastFrame = nextFrame;
+	}
     requestAnimationFrame(animate);
 }
 
