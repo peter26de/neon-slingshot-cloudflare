@@ -103,6 +103,7 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 });
 
 window.addEventListener('pointerdown', (e) => {
+	console.log('pointerdown');
 	mouse.x = e.clientX; mouse.y = e.clientY;
 	isDragging = true;
 	if(isDragging) {
