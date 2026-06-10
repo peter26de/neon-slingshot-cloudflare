@@ -64,10 +64,6 @@ let enemies = [];
 let particles = [];
 let lastTime = Date.now();
 
-const stats = new Stats();
-stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
-document.body.appendChild(stats.dom);
-
 class Enemy {
 	constructor() { this.reset(); }
 	reset() {
@@ -121,7 +117,6 @@ window.addEventListener('pointerdown', (e) => {
 // window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
 function animate() {
-    stats.begin();
 	timeScale = isDragging ? 0.2 : 1.0;
 	ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
 	ctx.fillRect(0, 0, width, height);
@@ -187,7 +182,6 @@ function animate() {
 	ctx.shadowColor = player.color;
 	ctx.fill();
 	
-    stats.end();
     requestAnimationFrame(animate);
 }
 
