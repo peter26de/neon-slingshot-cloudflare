@@ -113,7 +113,7 @@ window.addEventListener('pointerdown', () => {
 	isDragging = false;
 	for(let i in enemies) enemies[i].clicks++;
 });
-window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+window.addEventListener('pointermove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
 function animate() {
 	timeScale = isDragging ? 0.2 : 1.0;
