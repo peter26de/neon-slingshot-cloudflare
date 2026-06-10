@@ -103,6 +103,7 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 });
 
 window.addEventListener('pointerdown', () => {
+	mouse.x = e.clientX; mouse.y = e.clientY;
 	isDragging = true;
 	if(isDragging) {
 		player.vx = (mouse.x - player.x) * 0.05;
@@ -113,7 +114,7 @@ window.addEventListener('pointerdown', () => {
 	isDragging = false;
 	for(let i in enemies) enemies[i].clicks++;
 });
-window.addEventListener('pointermove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+// window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
 function animate() {
 	timeScale = isDragging ? 0.2 : 1.0;
