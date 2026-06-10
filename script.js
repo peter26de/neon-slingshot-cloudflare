@@ -56,7 +56,6 @@ const fpsEl = document.getElementById('fps');
 
 let width, height;
 let score = 0;
-let 
 let timeScale = 1.0;
 let isDragging = false;
 let mouse = { x: 0, y: 0 };
