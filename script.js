@@ -102,7 +102,7 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 	document.getElementById('start-screen').style.display = 'none';
 });
 
-window.addEventListener('pointerdown', () => {
+window.addEventListener('pointerdown', (e) => {
 	mouse.x = e.clientX; mouse.y = e.clientY;
 	isDragging = true;
 	if(isDragging) {
