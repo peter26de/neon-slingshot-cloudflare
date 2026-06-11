@@ -1,15 +1,23 @@
 let audioInitialized = false;
 let synth, hitSynth, launchSynth;
+
 function shot() {
-	const sound = new Audio("shot.wav");
-	sound.play();
+    const sound = new Audio("shot.wav");
+    sound.preservesPitch = false; 
+    sound.playbackRate = Math.exp((Math.random() - 0.5) * 0.2);
+    sound.play();
 }
+
 function redOrb() {
 	const sound = new Audio("redOrb.wav");
+    sound.preservesPitch = false; 
+    sound.playbackRate = Math.exp((Math.random() - 0.5) * 0.2);
 	sound.play();
 }
 function blackOrb() {
 	const sound = new Audio("blackOrb.wav");
+    sound.preservesPitch = false; 
+    sound.playbackRate = Math.exp((Math.random() - 0.5) * 0.2);
 	sound.play();
 }
 
@@ -60,10 +68,12 @@ let isDragging = false;
 let mouse = { x: 0, y: 0 };
 
 const player = { x: 0, y: 0, vx: 0, vy: 0, radius: 12, isLaunching: false, color: '#38bdf8' };
+let started = 0;
 let enemies = [];
 let lastTime = Date.now();
 let lastFrame = performance.now();
-let nextFrame = performance.now();
+let nextFrame = performance.now() + 1000/60;
+let blackAlerted = 0;
 
 class Enemy {
 	constructor() { this.reset(); }
@@ -82,10 +92,10 @@ class Enemy {
 		this.clicks = 0;
 	}
 	update() {
-		this.x += this.vx * timeScale * 2;
-		this.y += this.vy * timeScale * 2;
-		this.vx += (this.x - player.x) * (this.deadly == 0 ? 0.06 : 0) * this.clicks / width;
-		this.vy += (this.y - player.y) * (this.deadly == 0 ? 0.06 : 0) * this.clicks / height;
+		this.x += this.vx * timeScale * 2 * (nextFrame - lastFrame) * 0.06;
+		this.y += this.vy * timeScale * 2 * (nextFrame - lastFrame) * 0.06;
+		this.vx += (this.x - player.x) * (this.deadly == 0 ? 0.06 : 0) * this.clicks / width * (nextFrame - lastFrame) * 0.06;
+		this.vy += (this.y - player.y) * (this.deadly == 0 ? 0.06 : 0) * this.clicks / height * (nextFrame - lastFrame) * 0.06;
 	}
 	draw() {
 		ctx.beginPath();
@@ -98,46 +108,54 @@ class Enemy {
 }
 
 document.getElementById('start-btn').addEventListener('click', async () => {
+	started = 1;
 	await Tone.start();
 	initAudio();
 	document.getElementById('start-screen').style.display = 'none';
 });
 
 window.addEventListener('pointerdown', (e) => {
-	mouse.x = e.clientX; mouse.y = e.clientY;
-	isDragging = true;
-	if(isDragging) {
-		player.vx = (mouse.x - player.x) * 0.05;
-		player.vy = (mouse.y - player.y) * 0.05;
-		player.isLaunching = true;
-		if(audioInitialized) shot();
+	if(started == 1) {
+		mouse.x = e.clientX; mouse.y = e.clientY;
+		isDragging = true;
+		if(isDragging) {
+			player.vx = (mouse.x - player.x) * 0.05;
+			player.vy = (mouse.y - player.y) * 0.05;
+			player.isLaunching = true;
+			if(audioInitialized) shot();
+		}
+		isDragging = false;
+		for(let i in enemies) enemies[i].clicks++;
 	}
-	isDragging = false;
-	for(let i in enemies) enemies[i].clicks++;
 });
 // window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
 function animate() {
+	nextFrame = performance.now();
 	timeScale = isDragging ? 0.2 : 1.0;
 	ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
 	ctx.fillRect(0, 0, width, height);
 
 	if(player.isLaunching) {
-		player.x += player.vx * timeScale;
-		player.y += player.vy * timeScale;
-		player.vx *= 0.99;
-		player.vy *= 0.99;
+		player.x += player.vx * timeScale * (nextFrame - lastFrame) * 0.06;
+		player.y += player.vy * timeScale * (nextFrame - lastFrame) * 0.06;
+		player.vx *= 0.99**( (nextFrame - lastFrame) * 0.06);
+		player.vy *= 0.99**( (nextFrame - lastFrame) * 0.06);
 		if(player.x < 0) {
 			player.vx = Math.abs(player.vx);
+			player.x = 0;
 		}
 		if(player.x > width) {
 			player.vx = -Math.abs(player.vx);
+			player.x = width;
 		}
 		if(player.y < 0) {
 			player.vy = Math.abs(player.vy);
+			player.y = 0;
 		}
 		if(player.y > height) {
 			player.vy = -Math.abs(player.vy);
+			player.y = height;
 		}
 	}
 
@@ -151,20 +169,23 @@ function animate() {
 				score = Math.max(0, score - 1000);
 			} else if(en.clicks > 0) {
 				score += 100;
+				const dvx = player.vx - en.vx;
+				const dvy = player.vy - en.vy;
+				const nvx = dx / Math.sqrt(dx*dx + dy*dy);
+				const nvy = dy / Math.sqrt(dx*dx + dy*dy);
+				const dot = dvx * nvx + dvy * nvy;
+				player.vx -= 2 * dot * nvx;
+				player.vy -= 2 * dot * nvy;
 			}
 			scoreEl.innerText = score;
 			if(audioInitialized) en.deadly == 0 ? redOrb() : blackOrb();
-			const dvx = player.vx - en.vx;
-			const dvy = player.vy - en.vy;
-			const nvx = dx / Math.sqrt(dx*dx + dy*dy);
-			const nvy = dy / Math.sqrt(dx*dx + dy*dy);
-			const dot = dvx * nvx + dvy * nvy;
-			player.vx -= 2 * dot * nvx;
-			player.vy -= 2 * dot * nvy;
 			enemies[i] = new Enemy();
+		} else if(en.deadly == 1) {
+			player.vx -= dx / (dx*dx + dy*dy)**1.5 * 1000 * en.radius * (nextFrame - lastFrame) * 0.06;
+			player.vy -= dy / (dx*dx + dy*dy)**1.5 * 1000 * en.radius * (nextFrame - lastFrame) * 0.06;
 		}
 	});
-
+	
 	if(Date.now() - lastTime > 1000) {
 		enemies.push(new Enemy());
 		lastTime = Date.now();
@@ -183,10 +204,16 @@ function animate() {
 	ctx.shadowColor = player.color;
 	ctx.fill();
 
-	nextFrame = performance.now();
 	if(nextFrame - lastFrame > 0) {
 		fpsEl.innerText = (1000 / (nextFrame - lastFrame)).toFixed(1);
 		lastFrame = nextFrame;
+	}
+	
+	if(blackAlerted == 0 && score >= 1000) {
+		alert("Beware of black orbs!");
+		lastFrame = performance.now();
+		lastTime = Date.now();
+		blackAlerted = 1;
 	}
     requestAnimationFrame(animate);
 }
@@ -194,9 +221,9 @@ function animate() {
 function resize() {
 	width = canvas.width = window.innerWidth;
 	height = canvas.height = window.innerHeight;
-	player.x = width / 2;
-	player.y = height / 2;
 }
 window.addEventListener('resize', resize);
 resize();
+player.x = width / 2;
+player.y = height / 2;
 animate();
