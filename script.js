@@ -165,6 +165,7 @@ function animate() {
 		const dx = player.x - en.x;
 		const dy = player.y - en.y;
 		if(Math.sqrt(dx*dx + dy*dy) < en.radius + player.radius) {
+			console.log("there");
 			if(en.deadly == 1) {
 				score = Math.max(0, score - 1000);
 			} else {
