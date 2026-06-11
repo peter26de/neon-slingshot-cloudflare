@@ -20,6 +20,10 @@ function blackOrb() {
     sound.playbackRate = Math.exp((Math.random() - 0.5) * 0.2);
 	sound.play();
 }
+function suspense() {
+	const sound = new Audio("suspense.mp3");
+	sound.play();
+}
 
 function initAudio() {
 	if (audioInitialized) return;
@@ -88,7 +92,8 @@ class Enemy {
 		const angle = Math.atan2(height/2 - this.y, width/2 - this.x);
 		this.vx = Math.cos(angle) * (Math.random() * 2 + 0.5);
 		this.vy = Math.sin(angle) * (Math.random() * 2 + 0.5);
-		this.deadly = Math.random() < 0.9 || score < 1000 ? 0 : 1;
+		this.deadly = Math.random() < 0.9 || score < 1000 || blackAlerted != 2 || Date.now() - alertedAt < 7000 ? 0 : 1;
+		if(Date.now() - alertedAt > 7000 && Date.now() - alertedAt < 11000) this.deadly = 1;
 		this.color = this.deadly == 0 ? '#ef4444' : '#000000';
 		this.clicks = 0;
 	}
@@ -137,19 +142,20 @@ function animate() {
 	if(blackAlerted == 0 && score >= 1000) {
 		alertedAt = Date.now();
 		blackAlerted = 1;
+		suspense();
 	}
 	if(blackAlerted == 1) {
-		if(Date.now() - alertedAt > 1000) {
+		if(Date.now() - alertedAt > 7000) {
 			ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
 			blackAlerted = 2;
 		} else {
-			ctx.fillStyle = 'rgba(' + (1000 + Date.now() - alertedAt) + ', ' + (1000 + Date.now() - alertedAt) + ', ' + (1000 + Date.now() - alertedAt) + ', 0.3)';
+			const ctxFillColor = 26 + 40 * Math.sin(Date.now() / 30) * Math.sin((Date.now() - alertedAt) / 7000 * Math.PI);
+			ctx.fillStyle = 'rgba(' + ctxFillColor + ', ' + ctxFillColor + ', ' + ctxFillColor + ', 0.3)';
 		}
 	} else {
 		ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
-	}	
-			
-	ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
+	}
+	
 	ctx.fillRect(0, 0, width, height);
 
 	if(player.isLaunching) {
@@ -183,6 +189,8 @@ function animate() {
 		if(Math.sqrt(dx*dx + dy*dy) < en.radius + player.radius) {
 			if(en.deadly == 1) {
 				score = Math.max(0, score - 1000);
+				ctx.fillStyle = 'rgba(-14, -14, -14, 0.3)';
+				ctx.fillRect(0, 0, width, height);
 			} else {
 				if(en.clicks > 0) score += 100;
 				const dvx = player.vx - en.vx;
@@ -197,8 +205,8 @@ function animate() {
 			if(audioInitialized) en.deadly == 0 ? redOrb() : blackOrb();
 			enemies[i] = new Enemy();
 		} else if(en.deadly == 1) {
-			player.vx -= dx * width / (dx*dx + dy*dy)**1.5 * en.radius * (nextFrame - lastFrame) * 0.06;
-			player.vy -= dy * height / (dx*dx + dy*dy)**1.5 * en.radius * (nextFrame - lastFrame) * 0.06;
+			player.vx -= dx * width / 6 / (dx*dx + dy*dy)**1.5 * en.radius * (nextFrame - lastFrame) * 0.06;
+			player.vy -= dy * height / 6 / (dx*dx + dy*dy)**1.5 * en.radius * (nextFrame - lastFrame) * 0.06;
 		}
 	});
 	
