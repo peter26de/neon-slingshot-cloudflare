@@ -181,8 +181,8 @@ function animate() {
 			if(audioInitialized) en.deadly == 0 ? redOrb() : blackOrb();
 			enemies[i] = new Enemy();
 		} else if(en.deadly == 1) {
-			player.vx -= dx / (dx*dx + dy*dy)**1.5 * 1000 * en.radius * (nextFrame - lastFrame) * 0.06;
-			player.vy -= dy / (dx*dx + dy*dy)**1.5 * 1000 * en.radius * (nextFrame - lastFrame) * 0.06;
+			player.vx -= dx * width / (dx*dx + dy*dy)**1.5 * en.radius * (nextFrame - lastFrame) * 0.06;
+			player.vy -= dy * height / (dx*dx + dy*dy)**1.5 * en.radius * (nextFrame - lastFrame) * 0.06;
 		}
 	});
 	
