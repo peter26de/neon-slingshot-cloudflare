@@ -74,6 +74,7 @@ let lastTime = Date.now();
 let lastFrame = performance.now();
 let nextFrame = performance.now() + 1000/60;
 let blackAlerted = 0;
+let alertedAt;
 
 class Enemy {
 	constructor() { this.reset(); }
@@ -133,6 +134,21 @@ window.addEventListener('pointerdown', (e) => {
 function animate() {
 	nextFrame = performance.now();
 	timeScale = isDragging ? 0.2 : 1.0;
+	if(blackAlerted == 0 && score >= 1000) {
+		alertedAt = Date.now();
+		blackAlerted = 1;
+	}
+	if(blackAlerted == 1) {
+		if(Date.now() - alertedAt > 1000) {
+			ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
+			blackAlerted = 2;
+		} else {
+			ctx.fillStyle = 'rgba(' + (1000 + Date.now() - alertedAt) + ', ' + (1000 + Date.now() - alertedAt) + ', ' + (1000 + Date.now() - alertedAt) + ', 0.3)';
+		}
+	} else {
+		ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
+	}	
+			
 	ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
 	ctx.fillRect(0, 0, width, height);
 
@@ -209,12 +225,6 @@ function animate() {
 		lastFrame = nextFrame;
 	}
 	
-	if(blackAlerted == 0 && score >= 1000) {
-		alert("Beware of black orbs!");
-		lastFrame = performance.now();
-		lastTime = Date.now();
-		blackAlerted = 1;
-	}
     requestAnimationFrame(animate);
 }
 
