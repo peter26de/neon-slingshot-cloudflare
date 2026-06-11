@@ -67,7 +67,7 @@ let timeScale = 1.0;
 let isDragging = false;
 let mouse = { x: 0, y: 0 };
 
-const player = { x: 0, y: 0, vx: 0, vy: 0, radius: 12, isLaunching: false, color: '#38bdf8' };
+const player = { x: 0, y: 0, vx: 0, vy: 0, radius: 12, isLaunching: true, color: '#38bdf8' };
 let started = 0;
 let enemies = [];
 let lastTime = Date.now();
@@ -165,7 +165,6 @@ function animate() {
 		const dx = player.x - en.x;
 		const dy = player.y - en.y;
 		if(Math.sqrt(dx*dx + dy*dy) < en.radius + player.radius) {
-			console.log("there");
 			if(en.deadly == 1) {
 				score = Math.max(0, score - 1000);
 			} else {
