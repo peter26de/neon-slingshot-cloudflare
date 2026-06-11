@@ -167,8 +167,8 @@ function animate() {
 		if(Math.sqrt(dx*dx + dy*dy) < en.radius + player.radius) {
 			if(en.deadly == 1) {
 				score = Math.max(0, score - 1000);
-			} else if(en.clicks > 0) {
-				score += 100;
+			} else {
+				if(en.clicks > 0) score += 100;
 				const dvx = player.vx - en.vx;
 				const dvy = player.vy - en.vy;
 				const nvx = dx / Math.sqrt(dx*dx + dy*dy);
