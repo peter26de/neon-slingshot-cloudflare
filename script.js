@@ -60,6 +60,7 @@ let lastFrame = performance.now();
 let nextFrame = performance.now() + 1000/60;
 let blackAlerted = 0;
 let alertedAt;
+let flashesEnabled = 0;
 
 function shot() {
 	if(blackAlerted != 1) {
@@ -126,6 +127,10 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 	initAudio();
 	document.getElementById('start-screen').style.display = 'none';
 });
+document.getElementById('flash-btn').addEventListener('click', function() {
+	document.getElementById('flashes-btn').innerHTML = flashesEnabled == 1 ? "DISABLE FLASHES" : "ENABLE FLASHES";
+	flashesEnabled = 1 - flashesEnabled;
+});
 
 window.addEventListener('pointerdown', (e) => {
 	if(started == 1) {
@@ -156,7 +161,7 @@ function animate() {
 			ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
 			blackAlerted = 2;
 		} else {
-			const ctxFillColor = 26 + 40 * Math.sin(Date.now() / 30) * Math.sin((Date.now() - alertedAt) / 7000 * Math.PI);
+			const ctxFillColor = 26 + 40 * Math.sin(Date.now() / 30) * Math.sin((Date.now() - alertedAt) / 7000 * Math.PI) * flashesEnabled;
 			ctx.fillStyle = 'rgba(' + ctxFillColor + ', ' + ctxFillColor + ', ' + ctxFillColor + ', 0.3)';
 		}
 	} else {
@@ -196,8 +201,10 @@ function animate() {
 		if(Math.sqrt(dx*dx + dy*dy) < en.radius + player.radius) {
 			if(en.deadly == 1) {
 				score = Math.max(0, score - 1000);
-				ctx.fillStyle = 'rgba(-14, -14, -14, 0.3)';
-				ctx.fillRect(0, 0, width, height);
+				if(flashesEnabled == 1) {
+					ctx.fillStyle = 'rgba(-14, -14, -14, 0.3)';
+					ctx.fillRect(0, 0, width, height);
+				}
 			} else {
 				if(en.clicks > 0) score += 100;
 				const dvx = player.vx - en.vx;
