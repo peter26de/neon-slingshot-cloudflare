@@ -127,7 +127,7 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 	initAudio();
 	document.getElementById('start-screen').style.display = 'none';
 });
-document.getElementById('flash-btn').addEventListener('click', function() {
+document.getElementById('flashes-btn').addEventListener('click', function() {
 	document.getElementById('flashes-btn').innerHTML = flashesEnabled == 1 ? "DISABLE FLASHES" : "ENABLE FLASHES";
 	flashesEnabled = 1 - flashesEnabled;
 });
