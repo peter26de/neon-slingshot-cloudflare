@@ -128,8 +128,8 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 	document.getElementById('start-screen').style.display = 'none';
 });
 document.getElementById('flashes-btn').addEventListener('click', function() {
-	document.getElementById('flashes-btn').innerHTML = flashesEnabled == 1 ? "DISABLE FLASHES" : "ENABLE FLASHES";
 	flashesEnabled = 1 - flashesEnabled;
+	document.getElementById('flashes-btn').innerHTML = flashesEnabled == 1 ? "DISABLE FLASHES" : "ENABLE FLASHES";
 });
 
 window.addEventListener('pointerdown', (e) => {
