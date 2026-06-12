@@ -1,25 +1,6 @@
 let audioInitialized = false;
 let synth, hitSynth, launchSynth;
 
-function shot() {
-    const sound = new Audio("shot.wav");
-    sound.preservesPitch = false; 
-    sound.playbackRate = Math.exp((Math.random() - 0.5) * 0.2);
-    sound.play();
-}
-
-function redOrb() {
-	const sound = new Audio("redOrb.wav");
-    sound.preservesPitch = false; 
-    sound.playbackRate = Math.exp((Math.random() - 0.5) * 0.2);
-	sound.play();
-}
-function blackOrb() {
-	const sound = new Audio("blackOrb.wav");
-    sound.preservesPitch = false; 
-    sound.playbackRate = Math.exp((Math.random() - 0.5) * 0.2);
-	sound.play();
-}
 function suspense() {
 	const sound = new Audio("suspense.mp3");
 	sound.play();
@@ -79,6 +60,32 @@ let lastFrame = performance.now();
 let nextFrame = performance.now() + 1000/60;
 let blackAlerted = 0;
 let alertedAt;
+
+function shot() {
+	if(blackAlerted != 1) {
+	    const sound = new Audio("shot.wav");
+	    sound.preservesPitch = false; 
+	    sound.playbackRate = Math.exp((Math.random() - 0.5) * 0.2);
+	    sound.play();
+	}
+}
+
+function redOrb() {
+	if(blackAlerted != 1) {
+		const sound = new Audio("redOrb.wav");
+	    sound.preservesPitch = false; 
+	    sound.playbackRate = Math.exp((Math.random() - 0.5) * 0.2);
+		sound.play();
+	}
+}
+function blackOrb() {
+	if(blackAlerted != 1) {
+		const sound = new Audio("blackOrb.wav");
+	    sound.preservesPitch = false; 
+	    sound.playbackRate = Math.exp((Math.random() - 0.5) * 0.2);
+		sound.play();
+	}
+}
 
 class Enemy {
 	constructor() { this.reset(); }
