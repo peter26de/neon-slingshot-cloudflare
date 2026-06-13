@@ -61,6 +61,7 @@ let nextFrame = performance.now() + 1000/60;
 let blackAlerted = 0;
 let alertedAt;
 let flashesEnabled = 0;
+let difficulty = 1;
 
 //function shot() {
 //	if(blackAlerted != 1) {
@@ -122,41 +123,50 @@ blackOrbLoad();
 
 // 3. High-performance, zero-latency playback loop
 function shot() {
-  if (!shotBuffer) return; 
-  
-  // Create a lightweight node (highly optimized by browsers)
-  const source = shotCtx.createBufferSource();
-  source.buffer = shotBuffer;
-  source.connect(shotCtx.destination);
-  
-  // Play immediately with sub-millisecond precision
-  source.start(0); 
+	if(blackAlerted != 1) {
+		if (!shotBuffer) return; 
+
+		// Create a lightweight node (highly optimized by browsers)
+		const source = shotCtx.createBufferSource();
+		source.buffer = shotBuffer;
+		source.playbackRate.value = Math.exp((Math.random() - 0.5) * 0.2);
+		source.connect(shotCtx.destination);
+
+		// Play immediately with sub-millisecond precision
+		source.start(0);
+	}
 }
 
 // 3. High-performance, zero-latency playback loop
 function redOrb() {
-  if (!redOrbBuffer) return; 
-  
-  // Create a lightweight node (highly optimized by browsers)
-  const source = redOrbCtx.createBufferSource();
-  source.buffer = redOrbBuffer;
-  source.connect(redOrbCtx.destination);
-  
-  // Play immediately with sub-millisecond precision
-  source.start(0); 
+	if(blackAlerted != 1) {
+		if (!redOrbBuffer) return; 
+
+		// Create a lightweight node (highly optimized by browsers)
+		const source = redOrbCtx.createBufferSource();
+		source.buffer = redOrbBuffer;
+		source.playbackRate.value = Math.exp((Math.random() - 0.5) * 0.2);
+		source.connect(redOrbCtx.destination);
+
+		// Play immediately with sub-millisecond precision
+		source.start(0);
+	}
 }
 
 // 3. High-performance, zero-latency playback loop
 function blackOrb() {
-  if (!blackOrbBuffer) return; 
-  
-  // Create a lightweight node (highly optimized by browsers)
-  const source = blackOrbCtx.createBufferSource();
-  source.buffer = blackOrbBuffer;
-  source.connect(blackOrbCtx.destination);
-  
-  // Play immediately with sub-millisecond precision
-  source.start(0); 
+	if(blackAlerted != 1) {
+		if (!blackOrbBuffer) return; 
+
+		// Create a lightweight node (highly optimized by browsers)
+		const source = blackOrbCtx.createBufferSource();
+		source.buffer = blackOrbBuffer;
+		source.playbackRate.value = Math.exp((Math.random() - 0.5) * 0.2);
+		source.connect(blackOrbCtx.destination);
+
+		// Play immediately with sub-millisecond precision
+		source.start(0);
+	}
 }
 
 class Enemy {
@@ -177,10 +187,10 @@ class Enemy {
 		this.clicks = 0;
 	}
 	update() {
-		this.x += this.vx * timeScale * 2 * (nextFrame - lastFrame) * 0.06;
-		this.y += this.vy * timeScale * 2 * (nextFrame - lastFrame) * 0.06;
-		this.vx += (this.x - player.x) * (this.deadly == 0 ? 0.06 : 0) * this.clicks / width * (nextFrame - lastFrame) * 0.06;
-		this.vy += (this.y - player.y) * (this.deadly == 0 ? 0.06 : 0) * this.clicks / height * (nextFrame - lastFrame) * 0.06;
+		this.x += this.vx * timeScale * 2 * ((nextFrame - lastFrame) * difficulty) * 0.06;
+		this.y += this.vy * timeScale * 2 * ((nextFrame - lastFrame) * difficulty) * 0.06;
+		this.vx += (this.x - player.x) * (this.deadly == 0 ? 0.06 : 0) * this.clicks / width * ((nextFrame - lastFrame) * difficulty) * 0.06;
+		this.vy += (this.y - player.y) * (this.deadly == 0 ? 0.06 : 0) * this.clicks / height * ((nextFrame - lastFrame) * difficulty) * 0.06;
 	}
 	draw() {
 		ctx.beginPath();
@@ -232,7 +242,7 @@ function animate() {
 			ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
 			blackAlerted = 2;
 		} else {
-			const ctxFillColor = 26 + 40 * Math.sin(Date.now() / 30) * Math.sin((Date.now() - alertedAt) / 7000 * Math.PI) * flashesEnabled;
+			const ctxFillColor = 26 + 20 * Math.sin(Date.now() / 30) * Math.sin((Date.now() - alertedAt) / 7000 * Math.PI) * flashesEnabled;
 			ctx.fillStyle = 'rgba(' + ctxFillColor + ', ' + ctxFillColor + ', ' + ctxFillColor + ', 0.3)';
 		}
 	} else {
@@ -242,10 +252,10 @@ function animate() {
 	ctx.fillRect(0, 0, width, height);
 
 	if(player.isLaunching) {
-		player.x += player.vx * timeScale * (nextFrame - lastFrame) * 0.06;
-		player.y += player.vy * timeScale * (nextFrame - lastFrame) * 0.06;
-		player.vx *= 0.99**( (nextFrame - lastFrame) * 0.06);
-		player.vy *= 0.99**( (nextFrame - lastFrame) * 0.06);
+		player.x += player.vx * timeScale * ((nextFrame - lastFrame) * difficulty) * 0.06;
+		player.y += player.vy * timeScale * ((nextFrame - lastFrame) * difficulty) * 0.06;
+		player.vx *= 0.99**( ((nextFrame - lastFrame) * difficulty) * 0.06);
+		player.vy *= 0.99**( ((nextFrame - lastFrame) * difficulty) * 0.06);
 		if(player.x < 0) {
 			player.vx = Math.abs(player.vx);
 			player.x = 0;
@@ -272,12 +282,16 @@ function animate() {
 		if(Math.sqrt(dx*dx + dy*dy) < en.radius + player.radius) {
 			if(en.deadly == 1) {
 				score = Math.max(0, score - 1000);
+				difficulty = Math.max(difficulty / 2, 1);
 				if(flashesEnabled == 1) {
 					ctx.fillStyle = 'rgba(-14, -14, -14, 0.3)';
 					ctx.fillRect(0, 0, width, height);
 				}
 			} else {
-				if(en.clicks > 0) score += 100;
+				if(en.clicks > 0) {
+					score += 100;
+					difficulty *= 2**(1/15);
+				}
 				const dvx = player.vx - en.vx;
 				const dvy = player.vy - en.vy;
 				const nvx = dx / Math.sqrt(dx*dx + dy*dy);
@@ -290,12 +304,12 @@ function animate() {
 			if(audioInitialized) en.deadly == 0 ? redOrb() : blackOrb();
 			enemies[i] = new Enemy();
 		} else if(en.deadly == 1) {
-			player.vx -= dx * width * width / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * (nextFrame - lastFrame) * 0.06;
-			player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * (nextFrame - lastFrame) * 0.06;
+			player.vx -= dx * width * width / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * ((nextFrame - lastFrame) * difficulty) * 0.06;
+			player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * ((nextFrame - lastFrame) * difficulty) * 0.06;
 		}
 	});
 	
-	if(Date.now() - lastTime > 1000) {
+	if(Date.now() - lastTime > 1000 / difficulty) {
 		enemies.push(new Enemy());
 		lastTime = Date.now();
 	}
