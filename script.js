@@ -52,12 +52,14 @@ let timeScale = 1.0;
 let isDragging = false;
 let mouse = { x: 0, y: 0 };
 
-const player = { x: 0, y: 0, vx: 0, vy: 0, radius: 12, isLaunching: true, color: '#38bdf8' };
+const player = { x: 0, y: 0, vx: 0, vy: 0, v: 0, radius: 12, isLaunching: true, color: '#38bdf8' };
 let started = 0;
 let enemies = [];
 let lastTime = Date.now();
 let lastFrame = performance.now();
 let nextFrame = performance.now() + 1000/60;
+let trueDelta = 0;
+let timePassed;
 let blackAlerted = 0;
 let alertedAt;
 let flashesEnabled = 0;
@@ -187,10 +189,11 @@ class Enemy {
 		this.clicks = 0;
 	}
 	update() {
-		this.x += this.vx * timeScale * 2 * ((nextFrame - lastFrame) * difficulty) * 0.06;
-		this.y += this.vy * timeScale * 2 * ((nextFrame - lastFrame) * difficulty) * 0.06;
-		this.vx += (this.x - player.x) * (this.deadly == 0 ? 0.06 : 0) * this.clicks / width * ((nextFrame - lastFrame) * difficulty) * 0.06;
-		this.vy += (this.y - player.y) * (this.deadly == 0 ? 0.06 : 0) * this.clicks / height * ((nextFrame - lastFrame) * difficulty) * 0.06;
+		this.x += this.vx * timeScale * 2 * trueDelta * difficulty * 0.06;
+		this.y += this.vy * timeScale * 2 * trueDelta * difficulty * 0.06;
+		this.vx += (this.x - player.x) * (this.deadly == 0 ? 0.06 : 0) * this.clicks / width * trueDelta * difficulty * 0.06;
+		this.vy += (this.y - player.y) * (this.deadly == 0 ? 0.06 : 0) * this.clicks / height * trueDelta * difficulty * 0.06;
+		this.v = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
 	}
 	draw() {
 		ctx.beginPath();
@@ -250,82 +253,96 @@ function animate() {
 	}
 	
 	ctx.fillRect(0, 0, width, height);
-
-	if(player.isLaunching) {
-		player.x += player.vx * timeScale * ((nextFrame - lastFrame) * difficulty) * 0.06;
-		player.y += player.vy * timeScale * ((nextFrame - lastFrame) * difficulty) * 0.06;
-		player.vx *= 0.99**( ((nextFrame - lastFrame) * difficulty) * 0.06);
-		player.vy *= 0.99**( ((nextFrame - lastFrame) * difficulty) * 0.06);
-		if(player.x < 0) {
-			player.vx = Math.abs(player.vx);
-			player.x = 0;
-		}
-		if(player.x > width) {
-			player.vx = -Math.abs(player.vx);
-			player.x = width;
-		}
-		if(player.y < 0) {
-			player.vy = Math.abs(player.vy);
-			player.y = 0;
-		}
-		if(player.y > height) {
-			player.vy = -Math.abs(player.vy);
-			player.y = height;
-		}
-	}
-
-	enemies.forEach((en, i) => {
-		en.update();
-		en.draw();
-		const dx = player.x - en.x;
-		const dy = player.y - en.y;
-		if(Math.sqrt(dx*dx + dy*dy) < en.radius + player.radius) {
-			if(en.deadly == 1) {
-				score = Math.max(0, score - 1000);
-				difficulty = Math.max(difficulty / 2, 1);
-				if(flashesEnabled == 1) {
-					ctx.fillStyle = 'rgba(-14, -14, -14, 0.3)';
-					ctx.fillRect(0, 0, width, height);
-				}
-			} else {
-				if(en.clicks > 0) {
-					score += 100;
-					difficulty *= 2**(1/15);
-				}
-				const dvx = player.vx - en.vx;
-				const dvy = player.vy - en.vy;
-				const nvx = dx / Math.sqrt(dx*dx + dy*dy);
-				const nvy = dy / Math.sqrt(dx*dx + dy*dy);
-				const dot = dvx * nvx + dvy * nvy;
-				player.vx -= 2 * dot * nvx;
-				player.vy -= 2 * dot * nvy;
-			}
-			scoreEl.innerText = score;
-			if(audioInitialized) en.deadly == 0 ? redOrb() : blackOrb();
-			enemies[i] = new Enemy();
-		} else if(en.deadly == 1) {
-			player.vx -= dx * width * width / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * ((nextFrame - lastFrame) * difficulty) * 0.06;
-			player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * ((nextFrame - lastFrame) * difficulty) * 0.06;
-		}
-	});
-	
-	if(Date.now() - lastTime > 1000 / difficulty) {
-		enemies.push(new Enemy());
-		lastTime = Date.now();
-	}
 	
 	for(let i = enemies.length - 1; i >= 0; i--) {
 		if(enemies[i].x < -100 || enemies[i].x > width + 100 || enemies[i].y < -100 || enemies[i].y > height + 100) {
 			enemies.splice(i, 1);
 		}
 	}
+	
+	timePassed = 0;
+	
+	while(timePassed < nextFrame - lastFrame) {
+		trueDelta = nextFrame - lastFrame - timePassed;
+		
+		if(Math.sqrt(player.vx * player.vx + player.vy * player.vy) > 0) trueDelta = Math.min(trueDelta, 1 / Math.sqrt(player.vx * player.vx + player.vy * player.vy));
+	
+		// for(let i = 0; i < enemies.length; i++) {
+		// 	if(enemies[i].v > 0) trueDelta = Math.min(trueDelta, 1 / enemies[i].v);
+		// }
+		
+		if(player.isLaunching) {
+			player.x += player.vx * timeScale * trueDelta * difficulty * 0.06;
+			player.y += player.vy * timeScale * trueDelta * difficulty * 0.06;
+			player.vx *= 0.99**( trueDelta * difficulty * 0.06);
+			player.vy *= 0.99**( trueDelta * difficulty * 0.06);
+			if(player.x < 0) {
+				player.vx = Math.abs(player.vx);
+				player.x = 0;
+			}
+			if(player.x > width) {
+				player.vx = -Math.abs(player.vx);
+				player.x = width;
+			}
+			if(player.y < 0) {
+				player.vy = Math.abs(player.vy);
+				player.y = 0;
+			}
+			if(player.y > height) {
+				player.vy = -Math.abs(player.vy);
+				player.y = height;
+			}
+		}
 
-	ctx.beginPath();
-	ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-	ctx.fillStyle = player.color;
-	ctx.shadowBlur = 20;
-	ctx.shadowColor = player.color;
-	ctx.fill();
+		enemies.forEach((en, i) => {
+			en.update();
+			if(timePassed == 0) en.draw();
+			const dx = player.x - en.x;
+			const dy = player.y - en.y;
+			if(Math.sqrt(dx*dx + dy*dy) < en.radius + player.radius) {
+				if(en.deadly == 1) {
+					score = Math.max(0, score - 1000);
+					difficulty = Math.max(difficulty / 1.5, 1);
+					if(flashesEnabled == 1) {
+						ctx.fillStyle = 'rgba(-14, -14, -14, 0.3)';
+						ctx.fillRect(0, 0, width, height);
+					}
+				} else {
+					if(en.clicks > 0) {
+						score += 100;
+						difficulty *= 1.5**(1/15);
+					}
+					const dvx = player.vx - en.vx;
+					const dvy = player.vy - en.vy;
+					const nvx = dx / Math.sqrt(dx*dx + dy*dy);
+					const nvy = dy / Math.sqrt(dx*dx + dy*dy);
+					const dot = dvx * nvx + dvy * nvy;
+					player.vx -= 2 * dot * nvx;
+					player.vy -= 2 * dot * nvy;
+				}
+				scoreEl.innerText = score;
+				if(audioInitialized) en.deadly == 0 ? redOrb() : blackOrb();
+				enemies[i] = new Enemy();
+			} else if(en.deadly == 1) {
+				player.vx -= dx * width * width / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta * difficulty * 0.06;
+				player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta * difficulty * 0.06;
+			}
+		});
+		
+		timePassed += trueDelta;
+
+		ctx.beginPath();
+		ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+		ctx.fillStyle = player.color;
+		ctx.shadowBlur = 20 * trueDelta * 0.06;
+		ctx.shadowColor = player.color;
+		ctx.fill();
+	}
+	
+	if(Date.now() - lastTime > 1000 / difficulty) {
+		enemies.push(new Enemy());
+		lastTime = Date.now();
+	}
 
 	if(nextFrame - lastFrame > 0) {
 		fpsEl.innerText = (1000 / (nextFrame - lastFrame)).toFixed(1);
