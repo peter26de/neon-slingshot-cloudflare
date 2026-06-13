@@ -125,7 +125,7 @@ function shot() {
   if (!shotBuffer) return; 
   
   // Create a lightweight node (highly optimized by browsers)
-  const source = shot.createBufferSource();
+  const source = shotCtx.createBufferSource();
   source.buffer = shotBuffer;
   source.connect(shotCtx.destination);
   
@@ -138,7 +138,7 @@ function redOrb() {
   if (!redOrbBuffer) return; 
   
   // Create a lightweight node (highly optimized by browsers)
-  const source = redOrb.createBufferSource();
+  const source = redOrbCtx.createBufferSource();
   source.buffer = redOrbBuffer;
   source.connect(redOrbCtx.destination);
   
@@ -151,7 +151,7 @@ function blackOrb() {
   if (!blackOrbBuffer) return; 
   
   // Create a lightweight node (highly optimized by browsers)
-  const source = blackOrb.createBufferSource();
+  const source = blackOrbCtx.createBufferSource();
   source.buffer = blackOrbBuffer;
   source.connect(blackOrbCtx.destination);
   
