@@ -62,30 +62,101 @@ let blackAlerted = 0;
 let alertedAt;
 let flashesEnabled = 0;
 
+//function shot() {
+//	if(blackAlerted != 1) {
+//	    const sound = new Audio("shot.wav");
+//	    sound.preservesPitch = false; 
+//	    sound.playbackRate = Math.exp((Math.random() - 0.5) * 0.2);
+//	    sound.play();
+//	}
+//}
+//
+//function redOrb() {
+//	if(blackAlerted != 1) {
+//		const sound = new Audio("redOrb.wav");
+//	    sound.preservesPitch = false; 
+//	    sound.playbackRate = Math.exp((Math.random() - 0.5) * 0.2);
+//		sound.play();
+//	}
+//}
+//function blackOrb() {
+//	if(blackAlerted != 1) {
+//		const sound = new Audio("blackOrb.wav");
+//	    sound.preservesPitch = false; 
+//	    sound.playbackRate = Math.exp((Math.random() - 0.5) * 0.2);
+//		sound.play();
+//	}
+//}
+
+// 1. Initialize the audio context
+const shotCtx = new AudioContext();
+const redOrbCtx = new AudioContext();
+const blackOrbCtx = new AudioContext();
+let shotBuffer = null;
+let redOrbBuffer = null;
+let blackOrbBuffer = null;
+
+// 2. Preload and decode the audio file once
+async function shotLoad() {
+  const response = await fetch("shot.wav");
+  const arrayBuffer = await response.arrayBuffer();
+  shotBuffer = await shotCtx.decodeAudioData(arrayBuffer);
+}
+shotLoad();
+
+// 2. Preload and decode the audio file once
+async function redOrbLoad() {
+  const response = await fetch("redOrb.wav");
+  const arrayBuffer = await response.arrayBuffer();
+  redOrbBuffer = await redOrbCtx.decodeAudioData(arrayBuffer);
+}
+redOrbLoad();
+
+// 2. Preload and decode the audio file once
+async function blackOrbLoad() {
+  const response = await fetch("blackOrb.wav");
+  const arrayBuffer = await response.arrayBuffer();
+  blackOrbBuffer = await blackOrbCtx.decodeAudioData(arrayBuffer);
+}
+blackOrbLoad();
+
+// 3. High-performance, zero-latency playback loop
 function shot() {
-	if(blackAlerted != 1) {
-	    const sound = new Audio("shot.wav");
-	    sound.preservesPitch = false; 
-	    sound.playbackRate = Math.exp((Math.random() - 0.5) * 0.2);
-	    sound.play();
-	}
+  if (!shotBuffer) return; 
+  
+  // Create a lightweight node (highly optimized by browsers)
+  const source = shot.createBufferSource();
+  source.buffer = shotBuffer;
+  source.connect(shotCtx.destination);
+  
+  // Play immediately with sub-millisecond precision
+  source.start(0); 
 }
 
+// 3. High-performance, zero-latency playback loop
 function redOrb() {
-	if(blackAlerted != 1) {
-		const sound = new Audio("redOrb.wav");
-	    sound.preservesPitch = false; 
-	    sound.playbackRate = Math.exp((Math.random() - 0.5) * 0.2);
-		sound.play();
-	}
+  if (!redOrbBuffer) return; 
+  
+  // Create a lightweight node (highly optimized by browsers)
+  const source = redOrb.createBufferSource();
+  source.buffer = redOrbBuffer;
+  source.connect(redOrbCtx.destination);
+  
+  // Play immediately with sub-millisecond precision
+  source.start(0); 
 }
+
+// 3. High-performance, zero-latency playback loop
 function blackOrb() {
-	if(blackAlerted != 1) {
-		const sound = new Audio("blackOrb.wav");
-	    sound.preservesPitch = false; 
-	    sound.playbackRate = Math.exp((Math.random() - 0.5) * 0.2);
-		sound.play();
-	}
+  if (!blackOrbBuffer) return; 
+  
+  // Create a lightweight node (highly optimized by browsers)
+  const source = blackOrb.createBufferSource();
+  source.buffer = blackOrbBuffer;
+  source.connect(blackOrbCtx.destination);
+  
+  // Play immediately with sub-millisecond precision
+  source.start(0); 
 }
 
 class Enemy {
@@ -219,8 +290,8 @@ function animate() {
 			if(audioInitialized) en.deadly == 0 ? redOrb() : blackOrb();
 			enemies[i] = new Enemy();
 		} else if(en.deadly == 1) {
-			player.vx -= dx * width / 6 / (dx*dx + dy*dy)**1.5 * en.radius * (nextFrame - lastFrame) * 0.06;
-			player.vy -= dy * height / 6 / (dx*dx + dy*dy)**1.5 * en.radius * (nextFrame - lastFrame) * 0.06;
+			player.vx -= dx * width * width / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * (nextFrame - lastFrame) * 0.06;
+			player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * (nextFrame - lastFrame) * 0.06;
 		}
 	});
 	
