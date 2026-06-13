@@ -322,7 +322,7 @@ function animate() {
 				}
 				scoreEl.innerText = score;
 				if(audioInitialized) en.deadly == 0 ? redOrb() : blackOrb();
-				enemies[i] = new Enemy();
+				enemies[i].reset();
 			} else if(en.deadly == 1) {
 				player.vx -= dx * width * width / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta * difficulty * 0.06;
 				player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta * difficulty * 0.06;
