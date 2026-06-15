@@ -95,9 +95,11 @@ let difficulty = 1;
 const shotCtx = new AudioContext();
 const redOrbCtx = new AudioContext();
 const blackOrbCtx = new AudioContext();
+const wallStuckCtx = new AudioContext();
 let shotBuffer = null;
 let redOrbBuffer = null;
 let blackOrbBuffer = null;
+let wallStuckBuffer = null;
 
 // 2. Preload and decode the audio file once
 async function shotLoad() {
@@ -122,6 +124,14 @@ async function blackOrbLoad() {
   blackOrbBuffer = await blackOrbCtx.decodeAudioData(arrayBuffer);
 }
 blackOrbLoad();
+
+// 2. Preload and decode the audio file once
+async function wallStuckLoad() {
+  const response = await fetch("wallStuck.mp3");
+  const arrayBuffer = await response.arrayBuffer();
+  wallStuckBuffer = await wallStuckCtx.decodeAudioData(arrayBuffer);
+}
+wallStuckLoad();
 
 // 3. High-performance, zero-latency playback loop
 function shot() {
@@ -165,6 +175,22 @@ function blackOrb() {
 		source.buffer = blackOrbBuffer;
 		source.playbackRate.value = Math.exp((Math.random() - 0.5) * 0.2);
 		source.connect(blackOrbCtx.destination);
+
+		// Play immediately with sub-millisecond precision
+		source.start(0);
+	}
+}
+
+// 3. High-performance, zero-latency playback loop
+function wallStuck() {
+	if(blackAlerted != 1) {
+		if (!wallStuckBuffer) return; 
+
+		// Create a lightweight node (highly optimized by browsers)
+		const source = wallStuckCtx.createBufferSource();
+		source.buffer = wallStuckBuffer;
+		source.playbackRate.value = Math.exp((Math.random() - 0.5) * 0.2);
+		source.connect(wallStuckCtx.destination);
 
 		// Play immediately with sub-millisecond precision
 		source.start(0);
@@ -233,7 +259,6 @@ window.addEventListener('pointerdown', (e) => {
 // window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
 function animate() {
-	nextFrame = performance.now();
 	timeScale = isDragging ? 0.2 : 1.0;
 	if(blackAlerted == 0 && score >= 1000) {
 		alertedAt = Date.now();
@@ -277,19 +302,43 @@ function animate() {
 			player.vx *= 0.99**( trueDelta * difficulty * 0.06);
 			player.vy *= 0.99**( trueDelta * difficulty * 0.06);
 			if(player.x < 0) {
-				player.vx = Math.abs(player.vx);
+				if(Math.random() < 0.1) {
+					wallStuck();
+					player.vx = 0;
+					player.vy = 0;
+				} else {
+					player.vx = Math.abs(player.vx);
+				}
 				player.x = 0;
 			}
 			if(player.x > width) {
-				player.vx = -Math.abs(player.vx);
+				if(Math.random() < 0.1) {
+					wallStuck();
+					player.vx = 0;
+					player.vy = 0;
+				} else {
+					player.vx = -Math.abs(player.vx);
+				}
 				player.x = width;
 			}
 			if(player.y < 0) {
-				player.vy = Math.abs(player.vy);
+				if(Math.random() < 0.1) {
+					wallStuck();
+					player.vx = 0;
+					player.vy = 0;
+				} else {
+					player.vy = Math.abs(player.vy);
+				}
 				player.y = 0;
 			}
 			if(player.y > height) {
-				player.vy = -Math.abs(player.vy);
+				if(Math.random() < 0.1) {
+					wallStuck();
+					player.vx = 0;
+					player.vy = 0;
+				} else {
+					player.vy = -Math.abs(player.vy);
+				}
 				player.y = height;
 			}
 		}
@@ -348,6 +397,7 @@ function animate() {
 		fpsEl.innerText = (1000 / (nextFrame - lastFrame)).toFixed(1);
 		lastFrame = nextFrame;
 	}
+	nextFrame = performance.now();
 	
     requestAnimationFrame(animate);
 }
