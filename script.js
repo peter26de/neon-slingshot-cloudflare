@@ -361,7 +361,7 @@ function animate() {
 						score += 100;
 						difficulty *= 1.5**(1/15);
 					}
-					if(Math.sqrt(dx*dx + dy*dy) > 0) {
+					if(dx*dx + dy*dy > 0) {
 						const dvx = player.vx - en.vx;
 						const dvy = player.vy - en.vy;
 						const nvx = dx / Math.sqrt(dx*dx + dy*dy);
