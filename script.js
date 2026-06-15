@@ -361,18 +361,20 @@ function animate() {
 						score += 100;
 						difficulty *= 1.5**(1/15);
 					}
-					const dvx = player.vx - en.vx;
-					const dvy = player.vy - en.vy;
-					const nvx = dx / Math.sqrt(dx*dx + dy*dy);
-					const nvy = dy / Math.sqrt(dx*dx + dy*dy);
-					const dot = dvx * nvx + dvy * nvy;
-					player.vx -= 2 * dot * nvx;
-					player.vy -= 2 * dot * nvy;
+					if(Math.sqrt(dx*dx + dy*dy) > 0) {
+						const dvx = player.vx - en.vx;
+						const dvy = player.vy - en.vy;
+						const nvx = dx / Math.sqrt(dx*dx + dy*dy);
+						const nvy = dy / Math.sqrt(dx*dx + dy*dy);
+						const dot = dvx * nvx + dvy * nvy;
+						player.vx -= 2 * dot * nvx;
+						player.vy -= 2 * dot * nvy;
+					}
 				}
 				scoreEl.innerText = score;
 				if(audioInitialized) en.deadly == 0 ? redOrb() : blackOrb();
 				enemies[i].reset();
-			} else if(en.deadly == 1) {
+			} else if(en.deadly == 1 && dx*dx + dy*dy > 0) {
 				player.vx -= dx * width * width / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta * difficulty * 0.06;
 				player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta * difficulty * 0.06;
 			}
