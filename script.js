@@ -91,110 +91,65 @@ let difficulty = 1;
 //	}
 //}
 
-// 1. Initialize the audio context
-const shotCtx = new AudioContext();
-const redOrbCtx = new AudioContext();
-const blackOrbCtx = new AudioContext();
-const wallStuckCtx = new AudioContext();
+// Single shared audio context
+const audioCtx = new AudioContext();
+
+// Audio buffers
 let shotBuffer = null;
 let redOrbBuffer = null;
 let blackOrbBuffer = null;
 let wallStuckBuffer = null;
 
-// 2. Preload and decode the audio file once
-async function shotLoad() {
-  const response = await fetch("shot.wav");
+// Generic loader
+async function loadSound(url) {
+  const response = await fetch(url);
   const arrayBuffer = await response.arrayBuffer();
-  shotBuffer = await shotCtx.decodeAudioData(arrayBuffer);
+  return audioCtx.decodeAudioData(arrayBuffer);
 }
-shotLoad();
 
-// 2. Preload and decode the audio file once
-async function redOrbLoad() {
-  const response = await fetch("redOrb.wav");
-  const arrayBuffer = await response.arrayBuffer();
-  redOrbBuffer = await redOrbCtx.decodeAudioData(arrayBuffer);
+// Preload all sounds
+async function loadSounds() {
+  [
+    shotBuffer,
+    redOrbBuffer,
+    blackOrbBuffer,
+    wallStuckBuffer
+  ] = await Promise.all([
+    loadSound("shot.wav"),
+    loadSound("redOrb.wav"),
+    loadSound("blackOrb.wav"),
+    loadSound("wallStuck.mp3")
+  ]);
 }
-redOrbLoad();
 
-// 2. Preload and decode the audio file once
-async function blackOrbLoad() {
-  const response = await fetch("blackOrb.wav");
-  const arrayBuffer = await response.arrayBuffer();
-  blackOrbBuffer = await blackOrbCtx.decodeAudioData(arrayBuffer);
+loadSounds();
+
+// Generic playback helper
+function playSound(buffer) {
+  if (blackAlerted === 1 || !buffer) return;
+
+  const source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+  source.playbackRate.value = Math.exp((Math.random() - 0.5) * 0.2);
+  source.connect(audioCtx.destination);
+  source.start();
 }
-blackOrbLoad();
 
-// 2. Preload and decode the audio file once
-async function wallStuckLoad() {
-  const response = await fetch("wallStuck.mp3");
-  const arrayBuffer = await response.arrayBuffer();
-  wallStuckBuffer = await wallStuckCtx.decodeAudioData(arrayBuffer);
-}
-wallStuckLoad();
-
-// 3. High-performance, zero-latency playback loop
+// Sound-specific wrappers
 function shot() {
-	if(blackAlerted != 1) {
-		if (!shotBuffer) return; 
-
-		// Create a lightweight node (highly optimized by browsers)
-		const source = shotCtx.createBufferSource();
-		source.buffer = shotBuffer;
-		source.playbackRate.value = Math.exp((Math.random() - 0.5) * 0.2);
-		source.connect(shotCtx.destination);
-
-		// Play immediately with sub-millisecond precision
-		source.start(0);
-	}
+  playSound(shotBuffer);
 }
 
-// 3. High-performance, zero-latency playback loop
 function redOrb() {
-	if(blackAlerted != 1) {
-		if (!redOrbBuffer) return; 
-
-		// Create a lightweight node (highly optimized by browsers)
-		const source = redOrbCtx.createBufferSource();
-		source.buffer = redOrbBuffer;
-		source.playbackRate.value = Math.exp((Math.random() - 0.5) * 0.2);
-		source.connect(redOrbCtx.destination);
-
-		// Play immediately with sub-millisecond precision
-		source.start(0);
-	}
+  playSound(redOrbBuffer);
 }
 
-// 3. High-performance, zero-latency playback loop
 function blackOrb() {
-	if(blackAlerted != 1) {
-		if (!blackOrbBuffer) return; 
-
-		// Create a lightweight node (highly optimized by browsers)
-		const source = blackOrbCtx.createBufferSource();
-		source.buffer = blackOrbBuffer;
-		source.playbackRate.value = Math.exp((Math.random() - 0.5) * 0.2);
-		source.connect(blackOrbCtx.destination);
-
-		// Play immediately with sub-millisecond precision
-		source.start(0);
-	}
+  playSound(blackOrbBuffer);
 }
 
-// 3. High-performance, zero-latency playback loop
 function wallStuck() {
-	if(blackAlerted != 1) {
-		if (!wallStuckBuffer) return; 
-
-		// Create a lightweight node (highly optimized by browsers)
-		const source = wallStuckCtx.createBufferSource();
-		source.buffer = wallStuckBuffer;
-		source.playbackRate.value = Math.exp((Math.random() - 0.5) * 0.2);
-		source.connect(wallStuckCtx.destination);
-
-		// Play immediately with sub-millisecond precision
-		source.start(0);
-	}
+  playSound(wallStuckBuffer);
 }
 
 class Enemy {
@@ -210,7 +165,7 @@ class Enemy {
 		this.vx = Math.cos(angle) * (Math.random() * 2 + 0.5);
 		this.vy = Math.sin(angle) * (Math.random() * 2 + 0.5);
 		this.deadly = Math.random() < 0.9 || score < 1000 || blackAlerted != 2 || Date.now() - alertedAt < 7000 ? 0 : 1;
-		if(Date.now() - alertedAt > 7000 && Date.now() - alertedAt < 11000) this.deadly = 1;
+		if(Date.now() - alertedAt > 7000 && Date.now() - alertedAt < 8000) this.deadly = 1;
 		this.color = this.deadly == 0 ? '#ef4444' : '#000000';
 		this.clicks = 0;
 	}
@@ -301,44 +256,25 @@ function animate() {
 			player.y += player.vy * timeScale * trueDelta * difficulty * 0.06;
 			player.vx *= 0.99**( trueDelta * difficulty * 0.06);
 			player.vy *= 0.99**( trueDelta * difficulty * 0.06);
+			if((player.x < 0 || player.x > width || player.y < 0 || player.y > height) && Math.random() < 0.1) {
+				player.vx /= 10;
+				player.vy /= 10;
+				wallStuck();
+			}
 			if(player.x < 0) {
-				if(Math.random() < 0.1) {
-					wallStuck();
-					player.vx = 0;
-					player.vy = 0;
-				} else {
-					player.vx = Math.abs(player.vx);
-				}
+				player.vx = Math.abs(player.vx);
 				player.x = 0;
 			}
 			if(player.x > width) {
-				if(Math.random() < 0.1) {
-					wallStuck();
-					player.vx = 0;
-					player.vy = 0;
-				} else {
-					player.vx = -Math.abs(player.vx);
-				}
+				player.vx = -Math.abs(player.vx);
 				player.x = width;
 			}
 			if(player.y < 0) {
-				if(Math.random() < 0.1) {
-					wallStuck();
-					player.vx = 0;
-					player.vy = 0;
-				} else {
-					player.vy = Math.abs(player.vy);
-				}
+				player.vy = Math.abs(player.vy);
 				player.y = 0;
 			}
 			if(player.y > height) {
-				if(Math.random() < 0.1) {
-					wallStuck();
-					player.vx = 0;
-					player.vy = 0;
-				} else {
-					player.vy = -Math.abs(player.vy);
-				}
+				player.vy = -Math.abs(player.vy);
 				player.y = height;
 			}
 		}
