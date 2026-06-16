@@ -91,8 +91,11 @@ let difficulty = 1;
 //	}
 //}
 
-// Single shared audio context
-const audioCtx = new AudioContext();
+// 1. Force a low latency hint and match hardware sample rate
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+  latencyHint: 'interactive', // Tells browser to use the smallest possible buffer
+  sampleRate: 44100            // Optional: Or match standard mobile DAC rates
+});
 
 // Audio buffers
 let shotBuffer = null;
