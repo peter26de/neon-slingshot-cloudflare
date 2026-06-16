@@ -256,9 +256,9 @@ function animate() {
 			player.y += player.vy * timeScale * trueDelta * difficulty * 0.06;
 			player.vx *= 0.99**( trueDelta * difficulty * 0.06);
 			player.vy *= 0.99**( trueDelta * difficulty * 0.06);
-			if((player.x < 0 || player.x > width || player.y < 0 || player.y > height) && Math.random() < 0.1) {
-				player.vx /= 10;
-				player.vy /= 10;
+			if((player.x < 0 || player.x > width || player.y < 0 || player.y > height) && Math.random() < 0.05) {
+				player.vx /= 20;
+				player.vy /= 20;
 				wallStuck();
 			}
 			if(player.x < 0) {
