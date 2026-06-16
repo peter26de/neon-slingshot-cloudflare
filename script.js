@@ -126,7 +126,7 @@ loadSounds();
 
 // Generic playback helper
 function playSound(buffer) {
-  if (blackAlerted === 1 || !buffer) return;
+  if (!buffer) return;
 
   const source = audioCtx.createBufferSource();
   source.buffer = buffer;
