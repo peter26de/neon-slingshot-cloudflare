@@ -46,6 +46,7 @@ const ctx = canvas.getContext('2d');
 const scoreEl = document.getElementById('score');
 const rivalEl = document.getElementById('rival');
 const webrtcEl = document.getElementById('webrtc-btn');
+const webrtcDialog = document.getElementById('webrtc-dialog');
 const fpsEl = document.getElementById('fps');
 
 let width, height;
@@ -237,47 +238,10 @@ pc.ondatachannel = (event) => {
   setupDataChannel(event.channel);
 };
 
-function copyText(text) {
-  if (navigator.clipboard && window.isSecureContext) {
-    return navigator.clipboard.writeText(text);
-  } else {
-    fallbackCopyToClipboard(text);
-    return Promise.resolve();
-  }
-}
-
-function fallbackCopyToClipboard(text) {
-  // Create a temporary hidden textarea element
-  const textArea = document.createElement("textarea");
-  textArea.value = text;
-  
-  // Move outside the screen area to avoid visual flashing
-  textArea.style.position = "fixed";
-  textArea.style.left = "-999999px";
-  
-  document.body.appendChild(textArea);
-  textArea.focus();
-  textArea.select();
-
-  try {
-    const successful = document.execCommand('copy');
-    if (successful) {
-      console.log("Fallback: Text copied successfully!");
-    } else {
-      console.clear();
-    }
-  } catch (err) {
-    console.error("Fallback: Unable to copy", err);
-  }
-
-  // Clean up the DOM
-  document.body.removeChild(textArea);
-}
-
 pc.onicecandidate = (event) => {
   if (!event.candidate) {
 	response = btoa(JSON.stringify(pc.localDescription));
-	copyText( (webrtcid == null ? "https://neon-slingshot.pages.dev/?webrtc=" : "") + response);
+	webrtcDialog.innerHTML = "Send this to your rival:" + (webrtcid == null ? "https://neon-slingshot.pages.dev/?webrtc=" : "") + response;
 	setUp = 1;
 	if(webrtcid == null) webrtcEl.innerHTML = "PASTE RESPONSE";
   }
@@ -287,7 +251,7 @@ function startAsInitiator() {
   setupDataChannel(pc.createDataChannel('integerExchange'));
   pc.createOffer()
     .then(offer => pc.setLocalDescription(offer))
-    .catch(err => console.log('Offer error:', err));
+    .catch(err => webrtcDialog.innerHTML = 'Offer error:' + err);
 }
 
 // Step 2 for Receiver (Paste Initiator String) OR Step 3 for Initiator (Paste Receiver String)
@@ -300,11 +264,11 @@ function pasteRemoteString(base64String) {
         if (parsedDesc.type === 'offer') {
           pc.createAnswer()
             .then(answer => pc.setLocalDescription(answer))
-            .catch(err => console.error('Answer error:', err));
+            .catch(err => webrtcDialog.innerHTML = 'Answer error:', err);
         }
       });
   } catch (err) {
-    console.error('Invalid string provided. Ensure you copied the entire block.', err);
+    webrtcDialog.innerHTML = 'Invalid string provided. Ensure you copied the entire block.' + err;
   }
 }
 
