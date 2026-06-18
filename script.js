@@ -218,7 +218,6 @@ webrtcEl.addEventListener('click', function() {
 });
 if(webrtcid == null) {} else {
 	webrtcEl.innerHTML = "COPY RESPONSE";
-	pasteRemoteString(webrtcid);
 }
 const config = {iceServers: [{ urls: 'stun:stun.cloudflare.com:3478' }]}; const pc = new RTCPeerConnection(config); let dataChannel;
 
