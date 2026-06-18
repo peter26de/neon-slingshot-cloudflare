@@ -44,6 +44,8 @@ function initAudio() {
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreEl = document.getElementById('score');
+const rivalEl = document.getElementById('rival');
+const webrtcEl = document.getElementById('webrtc-btn');
 const fpsEl = document.getElementById('fps');
 
 let width, height;
@@ -199,6 +201,95 @@ document.getElementById('flashes-btn').addEventListener('click', function() {
 	flashesEnabled = 1 - flashesEnabled;
 	document.getElementById('flashes-btn').innerHTML = flashesEnabled == 1 ? "DISABLE FLASHES" : "ENABLE FLASHES";
 });
+const webrtcid = new URLSearchParams(window.location.search).get("webrtc");
+let setUp = 0;
+webrtcEl.addEventListener('click', function() {
+	if(webrtcid == null) {
+		if(setUp == 0) {
+			startAsInitiator();
+		} else {
+			pasteRemoteString(prompt("PASTE RESPONSE HERE"));
+		}
+	} else {
+		pasteRemoteString(webrtcid);
+	}
+});
+if(webrtcid != null) {
+	webrtcEl.innerHTML = "COPY RESPONSE";
+}
+const config = {iceServers: [{ urls: 'stun:stun.cloudflare.com:3478' }]}; const pc = new RTCPeerConnection(config); let dataChannel;
+
+function setupDataChannel(channel) {
+  dataChannel = channel;
+  dataChannel.onopen = () => {rival.innerText = "";};
+  dataChannel.onmessage = (event) => {
+    const receivedInteger = parseInt(event.data, 10);
+    rival.innerText = receivedInteger;
+  };
+  dataChannel.onclose = (event) => {
+    rival.innerText = "-";
+  };
+}
+
+pc.ondatachannel = (event) => {
+  setupDataChannel(event.channel);
+};
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text)
+    .then(() => {setUp = 1})
+    .catch(err => {});
+}
+
+pc.onicecandidate = (event) => {
+  if (!event.candidate) {
+    copyToClipboard(btoa(JSON.stringify(pc.localDescription)));
+	setUp = 1;
+	if(webrtcid == null) webrtcEl.innerHTML = "PASTE RESPONSE";
+  }
+};
+
+function startAsInitiator() {
+  setupDataChannel(pc.createDataChannel('integerExchange'));
+  pc.createOffer()
+    .then(offer => pc.setLocalDescription(offer))
+    .catch(err => console.log('Offer error:', err));
+}
+
+// Step 2 for Receiver (Paste Initiator String) OR Step 3 for Initiator (Paste Receiver String)
+function pasteRemoteString(base64String) {
+  try {
+    const parsedDesc = JSON.parse(atob(base64String.trim()));
+    pc.setRemoteDescription(new RTCSessionDescription(parsedDesc))
+      .then(() => {
+        // If we are the receiver handling an offer, automatically generate the answer
+        if (parsedDesc.type === 'offer') {
+          pc.createAnswer()
+            .then(answer => pc.setLocalDescription(answer))
+            .catch(err => console.error('Answer error:', err));
+        }
+      });
+  } catch (err) {
+    console.error('Invalid string provided. Ensure you copied the entire block.', err);
+  }
+}
+
+// 5. Data Transmission Function
+function sendInteger(value) {
+  if (!dataChannel || dataChannel.readyState !== 'open') {
+    console.error('❌ Cannot send data. Channel is closed or not established yet.');
+    return;
+  }
+  
+  if (!Number.isInteger(value)) {
+    console.warn('⚠️ Provided value is not an integer. Converting...');
+    value = Math.floor(value);
+  }
+
+  dataChannel.send(value.toString());
+  console.log('📤 Sent integer:', value);
+}
+
 
 window.addEventListener('pointerdown', (e) => {
 	if(started == 1) {
@@ -311,6 +402,7 @@ function animate() {
 					}
 				}
 				scoreEl.innerText = score;
+				sendInteger(score);
 				if(audioInitialized) en.deadly == 0 ? redOrb() : blackOrb();
 				enemies[i].reset();
 			} else if(en.deadly == 1 && dx*dx + dy*dy > 0) {
