@@ -241,7 +241,7 @@ pc.ondatachannel = (event) => {
 pc.onicecandidate = (event) => {
   if (!event.candidate) {
 	response = btoa(JSON.stringify(pc.localDescription));
-	webrtcDialog.innerHTML = "Send this to your rival:" + (webrtcid == null ? "https://neon-slingshot.pages.dev/?webrtc=" : "") + response;
+	webrtcDialog.innerHTML = "Send this to your rival: " + (webrtcid == null ? "https://neon-slingshot.pages.dev/?webrtc=" : "") + response;
 	setUp = 1;
 	if(webrtcid == null) webrtcEl.innerHTML = "PASTE RESPONSE";
   }
