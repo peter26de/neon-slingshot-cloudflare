@@ -223,7 +223,7 @@ const config = {iceServers: [{ urls: 'stun:stun.cloudflare.com:3478' }]}; const 
 
 function setupDataChannel(channel) {
   dataChannel = channel;
-  dataChannel.onopen = () => {rival.innerText = "";};
+  dataChannel.onopen = () => {rival.innerText = 0;};
   dataChannel.onmessage = (event) => {
     const receivedInteger = parseInt(event.data, 10);
     rival.innerText = receivedInteger;
