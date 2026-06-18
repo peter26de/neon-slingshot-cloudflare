@@ -373,7 +373,7 @@ function animate() {
 	while(timePassed < nextFrame - lastFrame) {
 		trueDelta = nextFrame - lastFrame - timePassed;
 		
-		if(player.vx * player.vx + player.vy * player.vy > 0 && performance.now() < nextFrame + (nextFrame - lastFrame) * 1.5) trueDelta = Math.min(trueDelta, 1 / Math.sqrt(player.vx * player.vx + player.vy * player.vy));
+		if(player.vx * player.vx + player.vy * player.vy > 0 && performance.now() < nextFrame + (nextFrame - lastFrame) * 1) trueDelta = Math.min(trueDelta, 1 / Math.sqrt(player.vx * player.vx + player.vy * player.vy));
 	
 		// for(let i = 0; i < enemies.length; i++) {
 		// 	if(enemies[i].v > 0) trueDelta = Math.min(trueDelta, 1 / enemies[i].v);
