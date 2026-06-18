@@ -216,9 +216,7 @@ webrtcEl.addEventListener('click', function() {
 		pasteRemoteString(webrtcid);
 	}
 });
-if(webrtcid == null) {} else {
-	webrtcEl.innerHTML = "COPY RESPONSE";
-}
+if(webrtcid != null) webrtcEl.innerHTML = "COPY RESPONSE";
 const config = {iceServers: [{ urls: 'stun:stun.cloudflare.com:3478' }]}; const pc = new RTCPeerConnection(config); let dataChannel;
 
 function setupDataChannel(channel) {
