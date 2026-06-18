@@ -243,7 +243,7 @@ function copyToClipboard(text) {
 
 pc.onicecandidate = (event) => {
   if (!event.candidate) {
-    copyToClipboard( (webrtcid == null ? "https://neon-slingshot.pages.dev/webrtc=": "") + btoa(JSON.stringify(pc.localDescription)));
+    copyToClipboard( (webrtcid == null ? "https://neon-slingshot.pages.dev/?webrtc=": "") + btoa(JSON.stringify(pc.localDescription)));
 	setUp = 1;
 	if(webrtcid == null) webrtcEl.innerHTML = "PASTE RESPONSE";
   }
