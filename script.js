@@ -207,17 +207,15 @@ let response;
 webrtcEl.addEventListener('click', function() {
 	if(webrtcid == null) {
 		if(setUp == 0) {
-			copyToClipboard("https://neon-slingshot.pages.dev/?webrtc=" + response);
+			startAsInitiator();
 		} else {
 			pasteRemoteString(prompt("PASTE RESPONSE HERE"));
 		}
 	} else {
-		copyToClipboard(response);
+		pasteRemoteString(webrtcid);
 	}
 });
-if(webrtcid == null) {
-			startAsInitiator();
-} else {
+if(webrtcid == null) {} else {
 	webrtcEl.innerHTML = "COPY RESPONSE";
 	pasteRemoteString(webrtcid);
 }
@@ -248,6 +246,7 @@ function copyToClipboard(text) {
 pc.onicecandidate = (event) => {
   if (!event.candidate) {
 	response = btoa(JSON.stringify(pc.localDescription));
+	copyToClipboard( (webrtcid == null ? "https://neon-slingshot.pages.dev/?webrtc=" : "") + response);
 	setUp = 1;
 	if(webrtcid == null) webrtcEl.innerHTML = "PASTE RESPONSE";
   }
