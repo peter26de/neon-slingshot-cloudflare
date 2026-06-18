@@ -237,16 +237,47 @@ pc.ondatachannel = (event) => {
   setupDataChannel(event.channel);
 };
 
-function copyToClipboard(text) {
-  navigator.clipboard.writeText(text)
-    .then(() => {setUp = 1})
-    .catch(err => {});
+function copyText(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text);
+  } else {
+    fallbackCopyToClipboard(text);
+    return Promise.resolve();
+  }
+}
+
+function fallbackCopyToClipboard(text) {
+  // Create a temporary hidden textarea element
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  
+  // Move outside the screen area to avoid visual flashing
+  textArea.style.position = "fixed";
+  textArea.style.left = "-999999px";
+  
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    const successful = document.execCommand('copy');
+    if (successful) {
+      console.log("Fallback: Text copied successfully!");
+    } else {
+      console.clear();
+    }
+  } catch (err) {
+    console.error("Fallback: Unable to copy", err);
+  }
+
+  // Clean up the DOM
+  document.body.removeChild(textArea);
 }
 
 pc.onicecandidate = (event) => {
   if (!event.candidate) {
 	response = btoa(JSON.stringify(pc.localDescription));
-	copyToClipboard( (webrtcid == null ? "https://neon-slingshot.pages.dev/?webrtc=" : "") + response);
+	copyText( (webrtcid == null ? "https://neon-slingshot.pages.dev/?webrtc=" : "") + response);
 	setUp = 1;
 	if(webrtcid == null) webrtcEl.innerHTML = "PASTE RESPONSE";
   }
