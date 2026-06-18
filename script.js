@@ -447,13 +447,15 @@ function animate() {
 		});
 		
 		timePassed += trueDelta;
+		if(timePassed == 0) {
 
-		ctx.beginPath();
-		ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-		ctx.fillStyle = player.color;
-		ctx.shadowBlur = 20 * trueDelta * 0.06;
-		ctx.shadowColor = player.color;
-		ctx.fill();
+			ctx.beginPath();
+			ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+			ctx.fillStyle = player.color;
+			ctx.shadowBlur = 20 * 0.06;
+			ctx.shadowColor = player.color;
+			ctx.fill();
+		}
 	}
 	
 	if(Date.now() - lastTime > 1000 / difficulty) {
