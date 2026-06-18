@@ -107,8 +107,8 @@ let wallStuckBuffer = null;
 
 // Generic loader
 async function loadSound(url) {
-  const response = await fetch(url);
-  const arrayBuffer = await response.arrayBuffer();
+  const responseSound = await fetch(url);
+  const arrayBuffer = await responseSound.arrayBuffer();
   return audioCtx.decodeAudioData(arrayBuffer);
 }
 
@@ -203,19 +203,23 @@ document.getElementById('flashes-btn').addEventListener('click', function() {
 });
 const webrtcid = new URLSearchParams(window.location.search).get("webrtc");
 let setUp = 0;
+let response;
 webrtcEl.addEventListener('click', function() {
 	if(webrtcid == null) {
 		if(setUp == 0) {
-			startAsInitiator();
+			copyToClipboard("https://neon-slingshot.pages.dev/?webrtc=" + response);
 		} else {
 			pasteRemoteString(prompt("PASTE RESPONSE HERE"));
 		}
 	} else {
-		pasteRemoteString(webrtcid);
+		copyToClipboard(response);
 	}
 });
-if(webrtcid != null) {
+if(webrtcid == null) {
+			startAsInitiator();
+} else {
 	webrtcEl.innerHTML = "COPY RESPONSE";
+	pasteRemoteString(webrtcid);
 }
 const config = {iceServers: [{ urls: 'stun:stun.cloudflare.com:3478' }]}; const pc = new RTCPeerConnection(config); let dataChannel;
 
@@ -243,7 +247,7 @@ function copyToClipboard(text) {
 
 pc.onicecandidate = (event) => {
   if (!event.candidate) {
-    copyToClipboard( (webrtcid == null ? "https://neon-slingshot.pages.dev/?webrtc=": "") + btoa(JSON.stringify(pc.localDescription)));
+	response = btoa(JSON.stringify(pc.localDescription));
 	setUp = 1;
 	if(webrtcid == null) webrtcEl.innerHTML = "PASTE RESPONSE";
   }
