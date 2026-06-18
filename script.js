@@ -415,6 +415,7 @@ function animate() {
 			if(Math.sqrt(dx*dx + dy*dy) < en.radius + player.radius) {
 				if(en.deadly == 1) {
 					score = Math.max(0, score - 1000);
+					sendInteger(score);
 					difficulty = Math.max(difficulty / 1.5, 1);
 					if(flashesEnabled == 1) {
 						ctx.fillStyle = 'rgba(-14, -14, -14, 0.3)';
@@ -423,6 +424,7 @@ function animate() {
 				} else {
 					if(en.clicks > 0) {
 						score += 100;
+						sendInteger(score);
 						difficulty *= 1.5**(1/15);
 					}
 					if(dx*dx + dy*dy > 0) {
@@ -436,7 +438,6 @@ function animate() {
 					}
 				}
 				scoreEl.innerText = score;
-				sendInteger(score);
 				if(audioInitialized) en.deadly == 0 ? redOrb() : blackOrb();
 				enemies[i].reset();
 			} else if(en.deadly == 1 && dx*dx + dy*dy > 0) {
