@@ -185,7 +185,7 @@ class Enemy {
 		ctx.beginPath();
 		ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
 		ctx.fillStyle = this.color;
-		ctx.shadowBlur = 15;
+		ctx.shadowBlur = 0 * 15;
 		ctx.shadowColor = this.color;
 		ctx.fill();
 	}
@@ -451,7 +451,7 @@ function animate() {
 		ctx.beginPath();
 		ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
 		ctx.fillStyle = player.color;
-		ctx.shadowBlur = 20 * trueDelta * 0.06;
+		ctx.shadowBlur = 0 * 20 * trueDelta * 0.06;
 		ctx.shadowColor = player.color;
 		ctx.fill();
 	}
