@@ -41,6 +41,7 @@ function initAudio() {
 	audioInitialized = true;
 }
 
+const startEl = document.getElementById('start-screen');
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreEl = document.getElementById('score');
@@ -48,6 +49,9 @@ const rivalEl = document.getElementById('rival');
 const webrtcEl = document.getElementById('webrtc-btn');
 const webrtcDialog = document.getElementById('webrtc-dialog');
 const fpsEl = document.getElementById('fps');
+const levelEl = document.getElementById('level');
+const levelBar = document.getElementById('level-bar');
+const healthBar = document.getElementById('health-bar');
 
 let width, height;
 let score = 0;
@@ -67,6 +71,9 @@ let blackAlerted = 0;
 let alertedAt;
 let flashesEnabled = 0;
 let difficulty = 1;
+let levelProgress = 0;
+let levelTotal = 0;
+let healthProgress = 100;
 
 //function shot() {
 //	if(blackAlerted != 1) {
@@ -105,6 +112,7 @@ let shotBuffer = null;
 let redOrbBuffer = null;
 let blackOrbBuffer = null;
 let wallStuckBuffer = null;
+let levelUpBuffer = null;
 
 // Generic loader
 async function loadSound(url) {
@@ -119,12 +127,16 @@ async function loadSounds() {
     shotBuffer,
     redOrbBuffer,
     blackOrbBuffer,
-    wallStuckBuffer
+    wallStuckBuffer,
+	levelUpBuffer,
+	deathBuffer
   ] = await Promise.all([
     loadSound("shot.wav"),
     loadSound("redOrb.wav"),
     loadSound("blackOrb.wav"),
-    loadSound("wallStuck.mp3")
+    loadSound("wallStuck.mp3"),
+	loadSound("levelUp.mp3"),
+	loadSound("death.mp3")
   ]);
 }
 
@@ -156,6 +168,14 @@ function blackOrb() {
 
 function wallStuck() {
   playSound(wallStuckBuffer);
+}
+
+function levelUp() {
+  playSound(levelUpBuffer);
+}
+
+function death() {
+  playSound(deathBuffer);
 }
 
 class Enemy {
@@ -196,7 +216,15 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 	started = 1;
 	await Tone.start();
 	initAudio();
-	document.getElementById('start-screen').style.display = 'none';
+	startEl.style.display = 'none';
+	document.getElementById('start-btn').innerText = "PLAY AGAIN";
+	score = 0;
+	scoreEl.innerText = score;
+	levelProgress = 0;
+	levelTotal = 0;
+	levelBar.style.width = levelProgress + '%';
+	healthProgress = 100;
+	healthBar.style.width = healthProgress + '%';
 });
 document.getElementById('flashes-btn').addEventListener('click', function() {
 	flashesEnabled = 1 - flashesEnabled;
@@ -219,18 +247,19 @@ webrtcEl.addEventListener('click', function() {
 if(webrtcid != null) {
 	webrtcEl.innerHTML = "COPY RESPONSE";
 	webrtcDialog.innerHTML = "Click \"Copy response\" to establish connection";
+	alert("1. Click \"Copy response\"\n2. Send the text to your rival");
 }
 const config = {iceServers: [{ urls: 'stun:stun.cloudflare.com:3478' }]}; const pc = new RTCPeerConnection(config); let dataChannel;
 
 function setupDataChannel(channel) {
   dataChannel = channel;
-  dataChannel.onopen = () => {rival.innerText = 0;};
+  dataChannel.onopen = () => {rivalEl.innerText = 0;};
   dataChannel.onmessage = (event) => {
     const receivedInteger = parseInt(event.data, 10);
-    rival.innerText = receivedInteger;
+    rivalEl.innerText = receivedInteger;
   };
   dataChannel.onclose = (event) => {
-    rival.innerText = "-";
+    rivalEl.innerText = "-";
   };
 }
 
@@ -254,7 +283,6 @@ function startAsInitiator() {
     .catch(err => webrtcDialog.innerHTML = 'Offer error:' + err);
 }
 
-// Step 2 for Receiver (Paste Initiator String) OR Step 3 for Initiator (Paste Receiver String)
 function pasteRemoteString(base64String) {
   try {
     const parsedDesc = JSON.parse(atob(base64String.trim()));
@@ -272,17 +300,16 @@ function pasteRemoteString(base64String) {
   }
 }
 
-// 5. Data Transmission Function
 function sendInteger(value) {
   if (!dataChannel || dataChannel.readyState !== 'open') {
     console.error('❌ Cannot send data. Channel is closed or not established yet.');
     return;
   }
   
-  if (!Number.isInteger(value)) {
-    console.warn('⚠️ Provided value is not an integer. Converting...');
-    value = Math.floor(value);
-  }
+  //if (!Number.isInteger(value)) {
+  //  console.warn('⚠️ Provided value is not an integer. Converting...');
+  //  value = Math.floor(value);
+  //}
 
   dataChannel.send(value.toString());
   console.log('📤 Sent integer:', value);
@@ -381,6 +408,13 @@ function animate() {
 					score = Math.max(0, score - 1000);
 					sendInteger(score);
 					difficulty = Math.max(difficulty / 1.5, 1);
+					healthProgress = Math.max(healthProgress - 25 - 8*Math.random(), 0);
+					if(healthProgress <= 0) {
+						death();
+						document.getElementById('title-text').innerText = "FINAL STATS:\nSCORE: " + score + "\nLEVEL: " + levelTotal;
+						startEl.style.display = 'flex';
+						started = 0;
+					}
 					if(flashesEnabled == 1) {
 						ctx.fillStyle = 'rgba(-14, -14, -14, 0.3)';
 						ctx.fillRect(0, 0, width, height);
@@ -390,6 +424,15 @@ function animate() {
 						score += 100;
 						sendInteger(score);
 						difficulty *= 1.5**(1/15);
+						if(levelProgress < 90) {
+							levelProgress += 10;
+						} else {
+							levelUp();
+							levelProgress = 0;
+							levelTotal++;
+							levelEl.innerText = levelTotal;
+						}
+						healthProgress = healthProgress * 4 / 5 + 20;
 					}
 					if(dx*dx + dy*dy > 0) {
 						const dvx = player.vx - en.vx;
@@ -401,6 +444,8 @@ function animate() {
 						player.vy -= 2 * dot * nvy;
 					}
 				}
+				levelBar.style.width = levelProgress + '%';
+				healthBar.style.width = healthProgress + '%';
 				scoreEl.innerText = score;
 				if(audioInitialized) en.deadly == 0 ? redOrb() : blackOrb();
 				enemies[i].reset();
