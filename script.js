@@ -222,6 +222,7 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 	levelProgress = 0;
 	levelTotal = 0;
 	levelBar.style.width = levelProgress + '%';
+	levelEl.innerText = 0;
 	healthProgress = 100;
 	healthBar.style.width = healthProgress + '%';
 });
@@ -407,7 +408,7 @@ function animate() {
 					score = Math.max(0, score - 1000);
 					sendInteger(score);
 					difficulty = Math.max(difficulty / 1.5, 1);
-					healthProgress = Math.max(healthProgress - 25 - 8*Math.random(), 0);
+					healthProgress = Math.max(healthProgress - 25 - 8 * Math.random(), 0);
 					if(healthProgress <= 0) {
 						death();
 						document.getElementById('title-text').innerText = "FINAL STATS:\nSCORE: " + score + "\nLEVEL: " + levelTotal;
@@ -431,7 +432,7 @@ function animate() {
 							levelTotal++;
 							levelEl.innerText = levelTotal;
 						}
-						healthProgress = healthProgress * 4 / 5 + 20;
+						healthProgress = healthProgress * 49 / 50 + 2;
 					}
 					if(dx*dx + dy*dy > 0) {
 						const dvx = player.vx - en.vx;
