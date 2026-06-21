@@ -190,8 +190,7 @@ class Enemy {
 		const angle = Math.atan2(height/2 - this.y, width/2 - this.x);
 		this.vx = Math.cos(angle) * (Math.random() * 2 + 0.5);
 		this.vy = Math.sin(angle) * (Math.random() * 2 + 0.5);
-		this.deadly = Math.random() < 0.9 || score < 1000 || blackAlerted != 2 || Date.now() - alertedAt < 7000 ? 0 : 1;
-		if(Date.now() - alertedAt > 7000 && Date.now() - alertedAt < 8000) this.deadly = 1;
+		this.deadly = Math.random() < 0.9 || score < 1000 || blackAlerted != 2 || Date.now() - alertedAt < 7000 || started == 0 ? 0 : 1;
 		this.color = this.deadly == 0 ? '#ef4444' : '#000000';
 		this.clicks = 0;
 	}
