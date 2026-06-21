@@ -55,6 +55,7 @@ const healthBar = document.getElementById('health-bar');
 
 let width, height;
 let score = 0;
+let longestStreak = 0;
 let timeScale = 1.0;
 let isDragging = false;
 let mouse = { x: 0, y: 0 };
@@ -190,7 +191,7 @@ class Enemy {
 		const angle = Math.atan2(height/2 - this.y, width/2 - this.x);
 		this.vx = Math.cos(angle) * (Math.random() * 2 + 0.5);
 		this.vy = Math.sin(angle) * (Math.random() * 2 + 0.5);
-		this.deadly = Math.random() < 0.9 || score < 1000 || blackAlerted != 2 || Date.now() - alertedAt < 7000 || started == 0 ? 0 : 1;
+		this.deadly = Math.random() < 0.9 || blackAlerted != 2 || Date.now() - alertedAt < 7000 || started == 0 ? 0 : 1;
 		this.color = this.deadly == 0 ? '#ef4444' : '#000000';
 		this.clicks = 0;
 	}
@@ -218,6 +219,7 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 	startEl.style.display = 'none';
 	document.getElementById('start-btn').innerText = "PLAY AGAIN";
 	score = 0;
+	longestStreak = 0;
 	scoreEl.innerText = score;
 	levelProgress = 0;
 	levelTotal = 0;
@@ -405,13 +407,13 @@ function animate() {
 			const dy = player.y - en.y;
 			if(Math.sqrt(dx*dx + dy*dy) < en.radius + player.radius) {
 				if(en.deadly == 1) {
-					score = Math.max(0, score - 1000);
+					score = 0;
 					sendInteger(score);
 					difficulty = Math.max(difficulty / 1.5, 1);
 					healthProgress = Math.max(healthProgress - 25 - 8 * Math.random(), 0);
 					if(healthProgress <= 0) {
 						death();
-						document.getElementById('title-text').innerText = "FINAL STATS:\nSCORE: " + score + "\nLEVEL: " + levelTotal;
+						document.getElementById('title-text').innerText = "FINAL STATS:\LONGEST STREAK: " + longestStreak + "\nLEVEL: " + levelTotal;
 						startEl.style.display = 'flex';
 						started = 0;
 					}
@@ -422,6 +424,7 @@ function animate() {
 				} else {
 					if(en.clicks > 0) {
 						score += 100;
+						longestStreak = Math.max(score, longestStreak);
 						sendInteger(score);
 						difficulty *= 1.5**(1/15);
 						if(levelProgress < 90) {
