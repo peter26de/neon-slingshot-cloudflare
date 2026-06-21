@@ -54,15 +54,15 @@ const levelBar = document.getElementById('level-bar');
 const healthBar = document.getElementById('health-bar');
 
 let width, height;
-let score = 0;
-let longestStreak = 0;
 let timeScale = 1.0;
 let isDragging = false;
 let mouse = { x: 0, y: 0 };
-
 const player = { x: 0, y: 0, vx: 0, vy: 0, v: 0, radius: 12, isLaunching: true, color: '#38bdf8' };
-let started = 0;
 let enemies = [];
+
+let score = 0;
+let longestStreak = 0;
+let started = 0;
 let lastTime = Date.now();
 let lastFrame = performance.now();
 let nextFrame = performance.now() + 1000/60;
@@ -191,7 +191,7 @@ class Enemy {
 		const angle = Math.atan2(height/2 - this.y, width/2 - this.x);
 		this.vx = Math.cos(angle) * (Math.random() * 2 + 0.5);
 		this.vy = Math.sin(angle) * (Math.random() * 2 + 0.5);
-		this.deadly = Math.random() < 0.9 || blackAlerted != 2 || Date.now() - alertedAt < 7000 || started == 0 ? 0 : 1;
+		this.deadly = Math.random() < 0.9 || blackAlerted != 2 || started == 0 ? 0 : 1;
 		this.color = this.deadly == 0 ? '#ef4444' : '#000000';
 		this.clicks = 0;
 	}
@@ -213,19 +213,21 @@ class Enemy {
 }
 
 document.getElementById('start-btn').addEventListener('click', async () => {
+	score = 0;
+	longestStreak = 0;
+	blackAlerted = 0;
+	difficulty = 1;
+	levelProgress = 0;
+	levelTotal = 0;
+	healthProgress = 100;
 	started = 1;
 	await Tone.start();
 	initAudio();
 	startEl.style.display = 'none';
 	document.getElementById('start-btn').innerText = "PLAY AGAIN";
-	score = 0;
-	longestStreak = 0;
 	scoreEl.innerText = score;
-	levelProgress = 0;
-	levelTotal = 0;
 	levelBar.style.width = levelProgress + '%';
 	levelEl.innerText = 0;
-	healthProgress = 100;
 	healthBar.style.width = healthProgress + '%';
 });
 document.getElementById('flashes-btn').addEventListener('click', function() {
@@ -410,7 +412,7 @@ function animate() {
 					score = 0;
 					sendInteger(score);
 					difficulty = Math.max(difficulty / 1.5, 1);
-					healthProgress = Math.max(healthProgress - 25 - 8 * Math.random(), 0);
+					healthProgress = Math.max(healthProgress - 25, 0);
 					if(healthProgress <= 0) {
 						death();
 						document.getElementById('title-text').innerText = "FINAL STATS:\LONGEST STREAK: " + longestStreak + "\nLEVEL: " + levelTotal;
@@ -426,7 +428,7 @@ function animate() {
 						score += 1;
 						longestStreak = Math.max(score, longestStreak);
 						sendInteger(score);
-						difficulty *= 1.5**(1/15);
+						difficulty *= 1.5**0.05;
 						if(levelProgress < 90) {
 							levelProgress += 10;
 						} else {
@@ -435,7 +437,7 @@ function animate() {
 							levelTotal++;
 							levelEl.innerText = levelTotal;
 						}
-						healthProgress = healthProgress * 49 / 50 + 2;
+						healthProgress = Math.min(healthProgress + 2, 100);
 					}
 					if(dx*dx + dy*dy > 0) {
 						const dvx = player.vx - en.vx;
