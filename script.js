@@ -136,7 +136,7 @@ async function loadSounds() {
     loadSound("wallStuck.mp3"),
 	loadSound("levelUp.mp3"),
 	loadSound("death.mp3"),
-	loadSound("suspense.mp3");
+	loadSound("suspense.mp3")
   ]);
 }
 
