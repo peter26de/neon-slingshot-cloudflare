@@ -417,8 +417,10 @@ function animate() {
 					difficulty = Math.max(difficulty / 1.5, 1);
 					healthProgress = Math.max(healthProgress - 25, 0);
 					if(healthProgress <= 0) {
-						death();
-						document.getElementById('title-text').innerText = "FINAL STATS:\nLONGEST STREAK: " + longestStreak + "\nLEVEL: " + levelTotal;
+						if(started == 1) {
+							death();
+							document.getElementById('title-text').innerText = "FINAL STATS:\nLONGEST STREAK: " + longestStreak + "\nLEVEL: " + levelTotal;
+						}
 						startEl.style.display = 'flex';
 						started = 0;
 					}
