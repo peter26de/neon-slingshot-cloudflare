@@ -1,11 +1,6 @@
 let audioInitialized = false;
 let synth, hitSynth, launchSynth;
 
-function suspense() {
-	const sound = new Audio("suspense.mp3");
-	sound.play();
-}
-
 function initAudio() {
 	if (audioInitialized) return;
 	
@@ -114,6 +109,8 @@ let redOrbBuffer = null;
 let blackOrbBuffer = null;
 let wallStuckBuffer = null;
 let levelUpBuffer = null;
+let deathBuffer = null;
+let suspenseBuffer = null;
 
 // Generic loader
 async function loadSound(url) {
@@ -130,14 +127,16 @@ async function loadSounds() {
     blackOrbBuffer,
     wallStuckBuffer,
 	levelUpBuffer,
-	deathBuffer
+	deathBuffer,
+	suspenseBuffer
   ] = await Promise.all([
     loadSound("shot.wav"),
     loadSound("redOrb.wav"),
     loadSound("blackOrb.wav"),
     loadSound("wallStuck.mp3"),
 	loadSound("levelUp.mp3"),
-	loadSound("death.mp3")
+	loadSound("death.mp3"),
+	loadSound("suspense.mp3");
   ]);
 }
 
@@ -177,6 +176,10 @@ function levelUp() {
 
 function death() {
   playSound(deathBuffer);
+}
+
+function suspense() {
+	playSound(suspenseBuffer);
 }
 
 class Enemy {
@@ -415,7 +418,7 @@ function animate() {
 					healthProgress = Math.max(healthProgress - 25, 0);
 					if(healthProgress <= 0) {
 						death();
-						document.getElementById('title-text').innerText = "FINAL STATS:\LONGEST STREAK: " + longestStreak + "\nLEVEL: " + levelTotal;
+						document.getElementById('title-text').innerText = "FINAL STATS:\nLONGEST STREAK: " + longestStreak + "\nLEVEL: " + levelTotal;
 						startEl.style.display = 'flex';
 						started = 0;
 					}
