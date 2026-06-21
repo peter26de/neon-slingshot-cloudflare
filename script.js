@@ -336,7 +336,7 @@ window.addEventListener('pointerdown', (e) => {
 
 function animate() {
 	timeScale = isDragging ? 0.2 : 1.0;
-	if(blackAlerted == 0 && score >= 1000) {
+	if(blackAlerted == 0 && score >= 10) {
 		alertedAt = Date.now();
 		blackAlerted = 1;
 		suspense();
@@ -423,7 +423,7 @@ function animate() {
 					}
 				} else {
 					if(en.clicks > 0) {
-						score += 100;
+						score += 1;
 						longestStreak = Math.max(score, longestStreak);
 						sendInteger(score);
 						difficulty *= 1.5**(1/15);
