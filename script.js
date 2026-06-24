@@ -256,7 +256,13 @@ if(webrtcid != null) {
 	webrtcDialog.innerHTML = "Click \"Copy response\" to establish connection";
 	alert("1. Click \"Copy response\"\n2. Send the text to your rival");
 }
-const config = {iceServers: [{ urls: 'stun:stun.cloudflare.com:3478' }]}; const pc = new RTCPeerConnection(config); let dataChannel;
+const config = {
+  iceServers: [
+    { urls: 'stun:stun.cloudflare.com:3478' },
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' }
+  ]
+}; const pc = new RTCPeerConnection(config); let dataChannel;
 
 function setupDataChannel(channel) {
   dataChannel = channel;
@@ -275,7 +281,7 @@ pc.ondatachannel = (event) => {
 };
 
 pc.onicecandidate = (event) => {
-  if (!event.candidate) {
+  if (!event.candidate || true) {
 	response = btoa(JSON.stringify(pc.localDescription));
 	webrtcDialog.innerHTML = "Send this to your rival: " + (webrtcid == null ? "https://neon-slingshot.pages.dev/?webrtc=" : "") + response;
 	setUp = 1;
