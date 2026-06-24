@@ -281,7 +281,7 @@ pc.ondatachannel = (event) => {
 };
 
 pc.onicecandidate = (event) => {
-  if (!event.candidate || true) {
+  if ((!event.candidate || true) && setUp == 0) {
 	response = btoa(JSON.stringify(pc.localDescription));
 	webrtcDialog.innerHTML = "Send this to your rival: " + (webrtcid == null ? "https://neon-slingshot.pages.dev/?webrtc=" : "") + response;
 	setUp = 1;
