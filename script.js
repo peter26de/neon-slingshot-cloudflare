@@ -66,6 +66,8 @@ let timePassed;
 let blackAlerted = 0;
 let alertedAt;
 let flashesEnabled = 0;
+let flashNow = 0;
+let currentCanvas;
 let difficulty = 1;
 let levelProgress = 0;
 let levelTotal = 0;
@@ -433,6 +435,7 @@ function animate() {
 					if(flashesEnabled == 1) {
 						ctx.fillStyle = 'rgba(-14, -14, -14, 0.3)';
 						ctx.fillRect(0, 0, width, height);
+						flashNow = 4;
 					}
 				} else {
 					if(en.clicks > 0) {
@@ -480,6 +483,19 @@ function animate() {
 	ctx.shadowBlur = 20 * 0.06;
 	ctx.shadowColor = player.color;
 	ctx.fill();
+	
+	if(flashNow > 0) {
+		flashNow--;
+		currentCanvas = ctx.getImageData(0, 0, width, height);
+		const data32 = new Int32Array(currentCanvas.data.buffer);
+		//for(let i = 0; i < currentCanvas.data.length; i = (i % 4 != 2 ? i + 1 : i + 2)) {
+		//	currentCanvas.data[i] = 255 - currentCanvas[i];
+		//}
+		for (let i = 0; i < data32.length; i++) {
+			data32[i] ^= 0x00FFFFFF; 
+		}
+		ctx.putImageData(currentCanvas, 0, 0);
+	}
 	
 	if(Date.now() - lastTime > 1000 / difficulty) {
 		enemies.push(new Enemy());
