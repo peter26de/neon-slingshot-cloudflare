@@ -113,6 +113,7 @@ let wallStuckBuffer = null;
 let levelUpBuffer = null;
 let deathBuffer = null;
 let suspenseBuffer = null;
+let blackWarningBuffer = null;
 
 // Generic loader
 async function loadSound(url) {
@@ -130,7 +131,8 @@ async function loadSounds() {
     wallStuckBuffer,
 	levelUpBuffer,
 	deathBuffer,
-	suspenseBuffer
+	suspenseBuffer,
+	blackWarningBuffer
   ] = await Promise.all([
     loadSound("shot.wav"),
     loadSound("redOrb.wav"),
@@ -138,7 +140,8 @@ async function loadSounds() {
     loadSound("wallStuck.mp3"),
 	loadSound("levelUp.mp3"),
 	loadSound("death.mp3"),
-	loadSound("suspense.mp3")
+	loadSound("suspense.mp3"),
+	loadSound("blackWarning.mp3")
   ]);
 }
 
@@ -184,6 +187,10 @@ function suspense() {
 	playSound(suspenseBuffer);
 }
 
+function blackWarning() {
+	playSound(blackWarningBuffer);
+}
+
 class Enemy {
 	constructor() { this.reset(); }
 	reset() {
@@ -194,11 +201,14 @@ class Enemy {
 		else if(side === 2) { this.x = Math.random() * width; this.y = height + 50; }
 		else { this.x = -50; this.y = Math.random() * height; }
 		const angle = Math.atan2(height/2 - this.y, width/2 - this.x);
-		this.vx = Math.cos(angle) * (Math.random() * 2 + 0.5);
-		this.vy = Math.sin(angle) * (Math.random() * 2 + 0.5);
 		this.deadly = Math.random() < 0.9 || blackAlerted != 2 || started == 0 ? 0 : 1;
+		this.vx = Math.cos(angle) * (Math.random() * 2 + 0.5) * 0.01**this.deadly;
+		this.vy = Math.sin(angle) * (Math.random() * 2 + 0.5) * 0.01**this.deadly;
 		this.color = this.deadly == 0 ? '#ef4444' : '#000000';
+		if(this.deadly == 1) blackWarning();
 		this.clicks = 0;
+		this.warning = this.deadly;
+		this.createdAt = performance.now();
 	}
 	update() {
 		this.x += this.vx * timeScale * 2 * trueDelta * difficulty * 0.06;
@@ -214,6 +224,24 @@ class Enemy {
 		ctx.shadowBlur = 15;
 		ctx.shadowColor = this.color;
 		ctx.fill();
+		
+		if(performance.now() - this.createdAt > 1000 && this.warning == 1) {
+			this.warning = 0;
+			this.vx *= 100;
+			this.vy *= 100;
+		}
+		if(this.warning == 1 && flashesEnabled == 1) {
+			// ctx.beginPath();
+			// ctx.moveTo(this.x, this.y);
+			// ctx.lineTo(width/2, height/2);
+			// ctx.lineWidth = 2 * this.radius;
+			// ctx.lineCap = "round";
+			// ctx.strokeStyle = "rgba(0, 0, 0," + 0.3 * Math.sin((performance.now() - this.createdAt) / 1000 * Math.PI) + ")";
+			// ctx.stroke();
+			ctx.fillStyle = "rgba(0, 0, 0," + 0.3 * Math.sin((performance.now() - this.createdAt) / 1000 * Math.PI) + ")";
+			ctx.font = "100px Arial";
+			ctx.fillText("!", this.x/2 + width/4, this.y/2 + height/4);
+		}
 	}
 }
 
