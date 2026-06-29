@@ -148,47 +148,47 @@ async function loadSounds() {
 loadSounds();
 
 // Generic playback helper
-function playSound(buffer) {
+function playSound(buffer, changeShift) {
   if (!buffer) return;
 
   const source = audioCtx.createBufferSource();
   source.buffer = buffer;
-  source.playbackRate.value = Math.exp((Math.random() - 0.5) * 0.2);
+  if(changeShift) source.playbackRate.value = Math.exp((Math.random() - 0.5) * 0.2);
   source.connect(audioCtx.destination);
   source.start();
 }
 
 // Sound-specific wrappers
 function shot() {
-  playSound(shotBuffer);
+  playSound(shotBuffer, true);
 }
 
 function redOrb() {
-  playSound(redOrbBuffer);
+  playSound(redOrbBuffer, true);
 }
 
 function blackOrb() {
-  playSound(blackOrbBuffer);
+  playSound(blackOrbBuffer, true);
 }
 
 function wallStuck() {
-  playSound(wallStuckBuffer);
+  playSound(wallStuckBuffer, true);
 }
 
 function levelUp() {
-  playSound(levelUpBuffer);
+  playSound(levelUpBuffer, true);
 }
 
 function death() {
-  playSound(deathBuffer);
+  playSound(deathBuffer, false);
 }
 
 function suspense() {
-	playSound(suspenseBuffer);
+	playSound(suspenseBuffer, false);
 }
 
 function blackWarning() {
-	playSound(blackWarningBuffer);
+	playSound(blackWarningBuffer, false);
 }
 
 class Enemy {
