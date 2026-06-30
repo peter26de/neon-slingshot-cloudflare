@@ -230,7 +230,7 @@ class Enemy {
 			this.vx *= 100;
 			this.vy *= 100;
 		}
-		if(this.warning == 1 && flashesEnabled == 1) {
+		if(this.warning == 1) {
 			// ctx.beginPath();
 			// ctx.moveTo(this.x, this.y);
 			// ctx.lineTo(width/2, height/2);
