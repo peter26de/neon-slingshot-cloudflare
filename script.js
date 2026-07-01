@@ -507,7 +507,7 @@ function animate() {
 	ctx.beginPath();
 	ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
 	ctx.fillStyle = player.color;
-	ctx.shadowBlur = 20 * 0.06;
+	ctx.shadowBlur = 20;
 	ctx.shadowColor = player.color;
 	ctx.fill();
 
