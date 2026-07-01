@@ -240,6 +240,7 @@ class Enemy {
 			// ctx.stroke();
 			ctx.fillStyle = "rgba(0, 0, 0," + 0.3 * Math.sin((performance.now() - this.createdAt) / 1000 * Math.PI) + ")";
 			ctx.font = "100px Arial";
+			ctx.shadowBlur = 0;
 			ctx.fillText("!", this.x/2 + width/4, this.y/2 + height/4);
 		}
 	}
