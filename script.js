@@ -54,6 +54,10 @@ let isDragging = false;
 let mouse = { x: 0, y: 0 };
 const player = { x: 0, y: 0, vx: 0, vy: 0, v: 0, radius: 12, isLaunching: true, color: '#38bdf8' };
 let enemies = [];
+let gravityGrid;
+let tempList;
+let tempX;
+let tempY;
 
 let score = 0;
 let longestStreak = 0;
@@ -377,6 +381,65 @@ window.addEventListener('pointerdown', (e) => {
 // window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
 function animate() {
+	ctx.beginPath();
+	ctx.shadowBlur = 0;
+	for(let i = 0; i < gravityGrid.length - 1; i++) {
+		for(let j = 0; j < gravityGrid[0].length - 1; j++) {
+			tempX = gravityGrid[i][j][0];
+			tempY = gravityGrid[i][j][1];
+			enemies.forEach((en, k) => {
+				if(en.deadly == 0) return;
+				if((en.x - gravityGrid[i][j][0])**2 + (en.y - gravityGrid[i][j][1])**2 > 0) {
+					tempX += 100 * (en.x - gravityGrid[i][j][0]) * Math.min(0.01, en.radius / ((en.x - gravityGrid[i][j][0])**2 + (en.y - gravityGrid[i][j][1])**2)**1.5);
+					tempY += 100 * (en.y - gravityGrid[i][j][1]) * Math.min(0.01, en.radius / ((en.x - gravityGrid[i][j][0])**2 + (en.y - gravityGrid[i][j][1])**2)**1.5);
+				}
+			});
+			gravityGrid[i][j][0] = tempX;
+			gravityGrid[i][j][1] = tempY;
+		}
+	}
+	for(let i = 0; i < gravityGrid.length - 1; i++) {
+		for(let j = 0; j < gravityGrid[0].length - 1; j++) {
+			enemies.forEach((en, k) => {
+				if(en.deadly == 0) return;
+				gravityGrid[i][j][2] = Math.max(gravityGrid[i][j][2], 1 - Math.sqrt((gravityGrid[i][j][0] - en.x)**2 + (gravityGrid[i][j][1] - en.y)**2)/en.radius/4);
+			});
+		}
+	}
+	for(let i = 0; i < gravityGrid.length - 1; i++) {
+		for(let j = 0; j < gravityGrid[0].length - 1; j++) {
+			ctx.strokeStyle = "rgba(20, 20, 20, " + gravityGrid[i][j][2] + ")";
+			ctx.moveTo(gravityGrid[i][j][0], gravityGrid[i][j][1]);
+			ctx.lineTo(gravityGrid[i][j + 1][0], gravityGrid[i][j + 1][1]);
+			ctx.moveTo(gravityGrid[i][j][0], gravityGrid[i][j][1]);
+			ctx.lineTo(gravityGrid[i + 1][j][0], gravityGrid[i + 1][j][1]);
+			ctx.stroke();
+			ctx.beginPath();
+			gravityGrid[i][j][2] = 0;
+		}
+	}
+	for(let i = 0; i < gravityGrid.length - 1; i++) {
+		ctx.strokeStyle = "rgba(20, 20, 20, " + gravityGrid[i][gravityGrid[0].length - 1][2] + ")";
+		ctx.moveTo(gravityGrid[i][gravityGrid[0].length - 1][0], gravityGrid[i][gravityGrid[0].length - 1][1]);
+		ctx.lineTo(gravityGrid[i + 1][gravityGrid[0].length - 1][0], gravityGrid[i + 1][gravityGrid[0].length - 1][1]);
+		ctx.stroke();
+		ctx.beginPath();
+	}
+	for(let i = 0; i < gravityGrid[0].length - 1; i++) {
+		ctx.strokeStyle = "rgba(20, 20, 20, " + gravityGrid[gravityGrid.length - 1][i][2] + ")";
+		ctx.moveTo(gravityGrid[gravityGrid.length - 1][i][0], gravityGrid[gravityGrid.length - 1][i][1]);
+		ctx.lineTo(gravityGrid[gravityGrid.length - 1][i + 1][0], gravityGrid[gravityGrid.length - 1][i + 1][1]);
+		ctx.stroke();
+		ctx.beginPath();
+	}
+	ctx.stroke();
+	for(let i = 0; i < gravityGrid.length - 1; i++) {
+		for(let j = 0; j < gravityGrid[0].length - 1; j++) {
+			gravityGrid[i][j][0] = width / Math.ceil(width/36) * i;
+			gravityGrid[i][j][1] = height / Math.ceil(height/36) * j;
+		}
+	}
+	ctx.shadowBlur = 20;
 	timeScale = isDragging ? 0.2 : 1.0;
 	if(blackAlerted == 0 && score >= 10) {
 		alertedAt = Date.now();
@@ -540,6 +603,14 @@ function animate() {
 function resize() {
 	width = canvas.width = window.innerWidth;
 	height = canvas.height = window.innerHeight;
+	gravityGrid = [];
+	for(let i = 0; i <= Math.ceil(width/36); i++) {
+		tempList = [];
+		for(let j = 0; j <= Math.ceil(height/36); j++) {
+			tempList.push([width / Math.ceil(width/36) * i, height / Math.ceil(height/36) * j, 0]);
+		}
+		gravityGrid.push(tempList);
+	}
 }
 window.addEventListener('resize', resize);
 resize();
