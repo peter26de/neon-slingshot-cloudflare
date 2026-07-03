@@ -450,14 +450,14 @@ function animate() {
 	}
 	if(blackAlerted == 1) {
 		if(Date.now() - alertedAt > 7000) {
-			ctx.fillStyle = 'rgba(26, 26, 26, 1)';
+			ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
 			blackAlerted = 2;
 		} else {
 			const ctxFillColor = 26 + 20 * Math.sin(Date.now() / 30) * Math.sin((Date.now() - alertedAt) / 7000 * Math.PI) * flashesEnabled;
-			ctx.fillStyle = 'rgba(' + ctxFillColor + ', ' + ctxFillColor + ', ' + ctxFillColor + ', 1)';
+			ctx.fillStyle = 'rgba(' + ctxFillColor + ', ' + ctxFillColor + ', ' + ctxFillColor + ', 0.3)';
 		}
 	} else {
-		ctx.fillStyle = 'rgba(26, 26, 26, 1)';
+		ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
 	}
 	
 	ctx.fillRect(0, 0, width, height);
