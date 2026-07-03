@@ -222,12 +222,14 @@ class Enemy {
 		this.v = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
 	}
 	draw() {
-		ctx.beginPath();
-		ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-		ctx.fillStyle = this.color;
-		ctx.shadowBlur = 15;
-		ctx.shadowColor = this.color;
-		ctx.fill();
+		if(this.deadly == 0) {
+			ctx.beginPath();
+			ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+			ctx.fillStyle = this.color;
+			ctx.shadowBlur = 15;
+			ctx.shadowColor = this.color;
+			ctx.fill();
+		}
 		
 		if(performance.now() - this.createdAt > 1000 && this.warning == 1) {
 			this.warning = 0;
@@ -390,8 +392,8 @@ function animate() {
 			enemies.forEach((en, k) => {
 				if(en.deadly == 0) return;
 				if((en.x - gravityGrid[i][j][0])**2 + (en.y - gravityGrid[i][j][1])**2 > 0) {
-					tempX += 100 * (en.x - gravityGrid[i][j][0]) * Math.min(0.01, en.radius / ((en.x - gravityGrid[i][j][0])**2 + (en.y - gravityGrid[i][j][1])**2)**1.5);
-					tempY += 100 * (en.y - gravityGrid[i][j][1]) * Math.min(0.01, en.radius / ((en.x - gravityGrid[i][j][0])**2 + (en.y - gravityGrid[i][j][1])**2)**1.5);
+					tempX += (en.x - gravityGrid[i][j][0]) * Math.min(0.5, 200 * en.radius / ((en.x - gravityGrid[i][j][0])**2 + (en.y - gravityGrid[i][j][1])**2)**1.5);
+					tempY += (en.y - gravityGrid[i][j][1]) * Math.min(0.5, 200 * en.radius / ((en.x - gravityGrid[i][j][0])**2 + (en.y - gravityGrid[i][j][1])**2)**1.5);
 				}
 			});
 			gravityGrid[i][j][0] = tempX;
