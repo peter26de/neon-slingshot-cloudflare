@@ -383,6 +383,32 @@ window.addEventListener('pointerdown', (e) => {
 // window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
 function animate() {
+	ctx.shadowBlur = 20;
+	timeScale = isDragging ? 0.2 : 1.0;
+	if(blackAlerted == 0 && score >= 10) {
+		alertedAt = Date.now();
+		blackAlerted = 1;
+		suspense();
+	}
+	if(blackAlerted == 1) {
+		if(Date.now() - alertedAt > 7000) {
+			ctx.fillStyle = 'rgba(39, 92, 118, 1)';
+			blackAlerted = 2;
+		} else {
+			const ctxFillColor = 20 * Math.sin(Date.now() / 30) * Math.sin((Date.now() - alertedAt) / 7000 * Math.PI) * flashesEnabled;
+			ctx.fillStyle = 'rgba(' + (39 + ctxFillColor) + ', ' + (92 + ctxFillColor) + ', ' + (118 + ctxFillColor) + ', 1)';
+		}
+	} else {
+		ctx.fillStyle = 'rgba(39, 92, 118, 1)';
+	}
+	
+	ctx.fillRect(0, 0, width, height);
+	
+	for(let i = enemies.length - 1; i >= 0; i--) {
+		if(enemies[i].x < -100 || enemies[i].x > width + 100 || enemies[i].y < -100 || enemies[i].y > height + 100) {
+			enemies.splice(i, 1);
+		}
+	}
 	ctx.beginPath();
 	ctx.shadowBlur = 0;
 	for(let i = 0; i < gravityGrid.length - 1; i++) {
@@ -439,32 +465,6 @@ function animate() {
 		for(let j = 0; j < gravityGrid[0].length - 1; j++) {
 			gravityGrid[i][j][0] = width / Math.ceil(width/36) * i;
 			gravityGrid[i][j][1] = height / Math.ceil(height/36) * j;
-		}
-	}
-	ctx.shadowBlur = 20;
-	timeScale = isDragging ? 0.2 : 1.0;
-	if(blackAlerted == 0 && score >= 10) {
-		alertedAt = Date.now();
-		blackAlerted = 1;
-		suspense();
-	}
-	if(blackAlerted == 1) {
-		if(Date.now() - alertedAt > 7000) {
-			ctx.fillStyle = 'rgba(39, 92, 118, 1)';
-			blackAlerted = 2;
-		} else {
-			const ctxFillColor = 20 * Math.sin(Date.now() / 30) * Math.sin((Date.now() - alertedAt) / 7000 * Math.PI) * flashesEnabled;
-			ctx.fillStyle = 'rgba(' + (39 + ctxFillColor) + ', ' + (92 + ctxFillColor) + ', ' + (118 + ctxFillColor) + ', 1)';
-		}
-	} else {
-		ctx.fillStyle = 'rgba(39, 92, 118, 1)';
-	}
-	
-	ctx.fillRect(0, 0, width, height);
-	
-	for(let i = enemies.length - 1; i >= 0; i--) {
-		if(enemies[i].x < -100 || enemies[i].x > width + 100 || enemies[i].y < -100 || enemies[i].y > height + 100) {
-			enemies.splice(i, 1);
 		}
 	}
 	
