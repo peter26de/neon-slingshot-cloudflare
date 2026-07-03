@@ -244,7 +244,7 @@ class Enemy {
 			// ctx.lineCap = "round";
 			// ctx.strokeStyle = "rgba(0, 0, 0," +  * Math.sin((performance.now() - this.createdAt) / 1000 * Math.PI) + ")";
 			// ctx.stroke();
-			ctx.fillStyle = "rgba(0, 0, 0," + 0.3 * Math.sin((performance.now() - this.createdAt) / 1000 * Math.PI) + ")";
+			ctx.fillStyle = "rgba(0, 0, 0," + 1 * Math.sin((performance.now() - this.createdAt) / 1000 * Math.PI) + ")";
 			ctx.font = "100px Arial";
 			ctx.shadowBlur = 0;
 			ctx.fillText("!", this.x/2 + width/4, this.y/2 + height/4);
@@ -450,14 +450,14 @@ function animate() {
 	}
 	if(blackAlerted == 1) {
 		if(Date.now() - alertedAt > 7000) {
-			ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
+			ctx.fillStyle = 'rgba(39, 92, 118, 1)';
 			blackAlerted = 2;
 		} else {
 			const ctxFillColor = 26 + 20 * Math.sin(Date.now() / 30) * Math.sin((Date.now() - alertedAt) / 7000 * Math.PI) * flashesEnabled;
-			ctx.fillStyle = 'rgba(' + ctxFillColor + ', ' + ctxFillColor + ', ' + ctxFillColor + ', 0.3)';
+			ctx.fillStyle = 'rgba(' + ctxFillColor + ', ' + ctxFillColor + ', ' + ctxFillColor + ', 1)';
 		}
 	} else {
-		ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
+		ctx.fillStyle = 'rgba(39, 92, 118, 1)';
 	}
 	
 	ctx.fillRect(0, 0, width, height);
