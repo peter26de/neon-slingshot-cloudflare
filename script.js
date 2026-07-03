@@ -453,8 +453,8 @@ function animate() {
 			ctx.fillStyle = 'rgba(39, 92, 118, 1)';
 			blackAlerted = 2;
 		} else {
-			const ctxFillColor = 26 + 20 * Math.sin(Date.now() / 30) * Math.sin((Date.now() - alertedAt) / 7000 * Math.PI) * flashesEnabled;
-			ctx.fillStyle = 'rgba(' + ctxFillColor + ', ' + ctxFillColor + ', ' + ctxFillColor + ', 1)';
+			const ctxFillColor = 20 * Math.sin(Date.now() / 30) * Math.sin((Date.now() - alertedAt) / 7000 * Math.PI) * flashesEnabled;
+			ctx.fillStyle = 'rgba(' + (39 + ctxFillColor) + ', ' + (92 + ctxFillColor) + ', ' + (118 + ctxFillColor) + ', 1)';
 		}
 	} else {
 		ctx.fillStyle = 'rgba(39, 92, 118, 1)';
