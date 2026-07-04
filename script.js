@@ -396,13 +396,13 @@ window.addEventListener('pointerdown', (e) => {
 	}
 });
 
-window.addEventListener('mousemove', (e) => {
+window.addEventListener('pointermove', (e) => {
 	mouse.x = e.clientX;
 	mouse.y = e.clientY;
 	crossChar = String.fromCharCode(33 + Math.floor(Math.random() * 94));
 });
 
-// window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+// window.addEventListener('pointermove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
 function animate() {
 	ctx.shadowBlur = 20;
