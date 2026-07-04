@@ -225,14 +225,14 @@ class Enemy {
 	}
 	draw() {
 		if(this.deadly == 0) {
-			ctx.beginPath();
-			ctx.shadowBlur = 5;
-			ctx.moveTo(this.oldX, this.oldY);
-			ctx.lineTo(this.x, this.y);
-			ctx.lineWidth = 2 * this.radius;
-			ctx.lineCap = "round";
-			ctx.strokeStyle = this.color;
-			ctx.stroke();
+			// ctx.beginPath();
+			// ctx.shadowBlur = 5;
+			// ctx.moveTo(this.oldX, this.oldY);
+			// ctx.lineTo(this.x, this.y);
+			// ctx.lineWidth = 2 * this.radius;
+			// ctx.lineCap = "round";
+			// ctx.strokeStyle = this.color;
+			// ctx.stroke();
 
 			this.oldX = this.x;
 			this.oldY = this.y;
