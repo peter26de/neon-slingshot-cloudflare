@@ -52,7 +52,7 @@ let width, height;
 let timeScale = 1.0;
 let isDragging = false;
 let mouse = { x: 0, y: 0 };
-const player = { x: 0, y: 0, vx: 0, vy: 0, v: 0, radius: 12, isLaunching: true, color: '#38bdf8' };
+const player = { x: 0, y: 0, oldX: 0, oldY: 0, vx: 0, vy: 0, v: 0, radius: 12, isLaunching: true, color: '#38bdf8' };
 let enemies = [];
 let gravityGrid;
 let tempList;
@@ -204,6 +204,8 @@ class Enemy {
 		else if(side === 1) { this.x = width + 50; this.y = Math.random() * height; }
 		else if(side === 2) { this.x = Math.random() * width; this.y = height + 50; }
 		else { this.x = -50; this.y = Math.random() * height; }
+		this.oldX = this.x;
+		this.oldY = this.y;
 		const angle = Math.atan2(height/2 - this.y, width/2 - this.x);
 		this.deadly = Math.random() < 0.9 || blackAlerted != 2 || started == 0 ? 0 : 1;
 		this.vx = Math.cos(angle) * (Math.random() * 2 + 0.5) * 0.01**this.deadly;
@@ -223,6 +225,18 @@ class Enemy {
 	}
 	draw() {
 		if(this.deadly == 0) {
+			ctx.beginPath();
+			ctx.shadowBlur = 5;
+			ctx.moveTo(this.oldX, this.oldY);
+			ctx.lineTo(this.x, this.y);
+			ctx.lineWidth = 2 * this.radius;
+			ctx.lineCap = "round";
+			ctx.strokeStyle = this.color;
+			ctx.stroke();
+
+			this.oldX = this.x;
+			this.oldY = this.y;
+			
 			ctx.beginPath();
 			ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
 			ctx.fillStyle = this.color;
@@ -411,6 +425,9 @@ function animate() {
 	}
 	ctx.beginPath();
 	ctx.shadowBlur = 0;
+	ctx.lineWidth = 1;
+	ctx.lineCap = "butt";
+	ctx.strokeStyle = "black";
 	for(let i = 0; i < gravityGrid.length - 1; i++) {
 		for(let j = 0; j < gravityGrid[0].length - 1; j++) {
 			tempX = gravityGrid[i][j][0];
@@ -470,6 +487,8 @@ function animate() {
 	
 	timePassed = 0;
 	
+	player.oldX = player.x;
+	player.oldY = player.y;
 	while(timePassed < nextFrame - lastFrame) {
 		trueDelta = nextFrame - lastFrame - timePassed;
 		
@@ -484,10 +503,24 @@ function animate() {
 			player.y += player.vy * timeScale * trueDelta * difficulty * 0.06;
 			player.vx *= 0.99**( trueDelta * difficulty * 0.06);
 			player.vy *= 0.99**( trueDelta * difficulty * 0.06);
-			if((player.x < 0 || player.x > width || player.y < 0 || player.y > height) && Math.random() < 0.05) {
-				player.vx /= 20;
-				player.vy /= 20;
-				wallStuck();
+			if(player.x < 0 || player.x > width || player.y < 0 || player.y > height) {
+				ctx.beginPath();
+				ctx.shadowBlur = 5;
+				ctx.moveTo(player.oldX, player.oldY);
+				ctx.lineTo(player.x, player.y);
+				ctx.lineWidth = 2 * player.radius;
+				ctx.lineCap = "round";
+				ctx.strokeStyle = player.color;
+				ctx.stroke();
+	
+				player.oldX = player.x;
+				player.oldY = player.y;
+				
+				if(Math.random() < 0.05) {
+					player.vx /= 20;
+					player.vy /= 20;
+					wallStuck();
+				}
 			}
 			if(player.x < 0) {
 				player.vx = Math.abs(player.vx);
@@ -513,6 +546,18 @@ function animate() {
 			const dx = player.x - en.x;
 			const dy = player.y - en.y;
 			if(Math.sqrt(dx*dx + dy*dy) < en.radius + player.radius) {
+				ctx.beginPath();
+				ctx.shadowBlur = 5;
+				ctx.moveTo(player.oldX, player.oldY);
+				ctx.lineTo(player.x, player.y);
+				ctx.lineWidth = 2 * player.radius;
+				ctx.lineCap = "round";
+				ctx.strokeStyle = player.color;
+				ctx.stroke();
+	
+				player.oldX = player.x;
+				player.oldY = player.y;
+				
 				if(en.deadly == 1) {
 					score = 0;
 					sendInteger(score);
@@ -569,12 +614,27 @@ function animate() {
 		timePassed += trueDelta;
 	}
 
+	if(nextFrame - lastFrame > 0) {
+		fpsEl.innerText = (1000 / (nextFrame - lastFrame)).toFixed(1);
+		lastFrame = nextFrame;
+	}
+	nextFrame = performance.now();
+
 	ctx.beginPath();
 	ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
 	ctx.fillStyle = player.color;
 	ctx.shadowBlur = 20;
 	ctx.shadowColor = player.color;
 	ctx.fill();
+	
+	ctx.beginPath();
+	ctx.shadowBlur = 10;
+	ctx.moveTo(player.oldX, player.oldY);
+	ctx.lineTo(player.x, player.y);
+	ctx.lineWidth = 2 * player.radius;
+	ctx.lineCap = "round";
+	ctx.strokeStyle = player.color;
+	ctx.stroke();
 
 	if(performance.now() - flashNow < 100) {
 		currentCanvas = ctx.getImageData(0, 0, width, height);
@@ -592,12 +652,6 @@ function animate() {
 		enemies.push(new Enemy());
 		lastTime = Date.now();
 	}
-
-	if(nextFrame - lastFrame > 0) {
-		fpsEl.innerText = (1000 / (nextFrame - lastFrame)).toFixed(1);
-		lastFrame = nextFrame;
-	}
-	nextFrame = performance.now();
 	
     requestAnimationFrame(animate);
 }
