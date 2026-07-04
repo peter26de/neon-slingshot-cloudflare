@@ -76,6 +76,7 @@ let difficulty = 1;
 let levelProgress = 0;
 let levelTotal = 0;
 let healthProgress = 100;
+let crossChar = '+';
 
 //function shot() {
 //	if(blackAlerted != 1) {
@@ -394,6 +395,13 @@ window.addEventListener('pointerdown', (e) => {
 		for(let i in enemies) enemies[i].clicks++;
 	}
 });
+
+window.addEventListener('mousemove', (e) => {
+	mouse.x = e.clientX;
+	mouse.y = e.clientY;
+	crossChar = String.fromCharCode(33 + Math.floor(Math.random() * 94));
+});
+
 // window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
 function animate() {
@@ -635,6 +643,16 @@ function animate() {
 	ctx.lineCap = "round";
 	ctx.strokeStyle = player.color;
 	ctx.stroke();
+	
+	if(Date.now() - lastTime > 1000 / difficulty) {
+		enemies.push(new Enemy());
+		lastTime = Date.now();
+	}
+	
+	ctx.fillStyle = "white";
+	ctx.font = "30px Arial";
+	ctx.shadowBlur = 0;
+	ctx.fillText(crossChar, mouse.x, mouse.y);
 
 	if(performance.now() - flashNow < 100) {
 		currentCanvas = ctx.getImageData(0, 0, width, height);
@@ -646,11 +664,6 @@ function animate() {
 			data32[i] ^= 0x00FFFFFF; 
 		}
 		ctx.putImageData(currentCanvas, 0, 0);
-	}
-	
-	if(Date.now() - lastTime > 1000 / difficulty) {
-		enemies.push(new Enemy());
-		lastTime = Date.now();
 	}
 	
     requestAnimationFrame(animate);
