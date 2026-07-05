@@ -62,6 +62,7 @@ const rivalEl = document.getElementById('rival');
 const webrtcEl = document.getElementById('webrtc-btn');
 const webrtcDialog = document.getElementById('webrtc-dialog');
 const fpsEl = document.getElementById('fps');
+const lowHealth = document.getElementById('lowHealth');
 const levelEl = document.getElementById('level');
 const levelBar = document.getElementById('level-bar');
 const healthBar = document.getElementById('health-bar');
@@ -297,6 +298,7 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 	await Tone.start();
 	initAudio();
 	startEl.style.display = 'none';
+	lowHealth.style.display = 'none';
 	document.getElementById('start-btn').innerText = "PLAY AGAIN";
 	scoreEl.innerText = score;
 	levelBar.style.width = levelProgress + '%';
@@ -628,6 +630,7 @@ function animate() {
 				}
 				levelBar.style.width = levelProgress + '%';
 				healthBar.style.width = healthProgress + '%';
+				lowHealth.style.display = healthProgress <= 25 ? "inline" : "none";
 				if (currentAmbient == "tone" && healthProgress <= 25) {
 					heartBeat.stop();
 					tonePlayer.stop();
