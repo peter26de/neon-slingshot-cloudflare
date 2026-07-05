@@ -1,8 +1,18 @@
 let audioInitialized = false;
 let synth, hitSynth, launchSynth;
 
+let tonePlayer;
+let heartBeat;
+let currentAmbient = "none";
+
 function initAudio() {
-	if (audioInitialized) return;
+	currentAmbient = "tone";
+	if (audioInitialized) {
+		heartBeat.stop();
+		tonePlayer.stop();
+		tonePlayer.start(Tone.now());
+		return;
+	}
 	
 	// Background rhythm
 	// synth = new Tone.MembraneSynth().toDestination();
@@ -20,16 +30,24 @@ function initAudio() {
 	//     synth.triggerAttackRelease("C1", "8n", time);
 	// }, "4n").start(0);
 	async function initAudioBack() {
-		const player = new Tone.Player({
+		tonePlayer = new Tone.Player({
 			url: "clock.wav",
 			loop: true,
-			autostart: false // Change this to false
+			autostart: false
+		}).toDestination();
+	
+		// await Tone.loaded();
+		
+		heartBeat = new Tone.Player({
+			url: "heartBeat.mp3",
+			loop: true,
+			autostart: false
 		}).toDestination();
 	
 		await Tone.loaded();
 	
 		// Start the player at the current audio context time
-		player.start(Tone.now()); 
+		tonePlayer.start(Tone.now()); 
 	}
 
 	initAudioBack();
@@ -610,6 +628,18 @@ function animate() {
 				}
 				levelBar.style.width = levelProgress + '%';
 				healthBar.style.width = healthProgress + '%';
+				if (currentAmbient == "tone" && healthProgress <= 25) {
+					heartBeat.stop();
+					tonePlayer.stop();
+					heartBeat.start(Tone.now());
+					currentAmbient = "heart";
+				}
+				if (currentAmbient == "heart" && healthProgress > 25) {
+					heartBeat.stop();
+					tonePlayer.stop();
+					tonePlayer.start(Tone.now());
+					currentAmbient = "tone";
+				}
 				scoreEl.innerText = score;
 				if(audioInitialized) en.deadly == 0 ? redOrb() : blackOrb();
 				enemies[i].reset();
@@ -652,7 +682,7 @@ function animate() {
 	ctx.fillStyle = "white";
 	ctx.font = "30px Arial";
 	ctx.shadowBlur = 0;
-	ctx.fillText(crossChar, mouse.x, mouse.y);
+	ctx.fillText(String.fromCharCode(33 + Math.floor(Math.random() * 94)), mouse.x, mouse.y);
 
 	if(performance.now() - flashNow < 100) {
 		currentCanvas = ctx.getImageData(0, 0, width, height);
