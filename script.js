@@ -431,7 +431,6 @@ function animate() {
 		ctx.fillStyle = "black";
 		ctx.fillRect(0, 0, width, height);
 		if(performance.now() - lastLost < 1000) {
-			offscreen.getContext('2d').putImageData(imageData, 0, 0);
 			// ctx.putImageData(imageData, 0, height/2 * (performance.now() - lastLost)/1000, 0, 0, width, height * (1000 - performance.now() + lastLost)/1000);
 			if(performance.now() - lastLost < 300) {
 				ctx.drawImage(offscreen, 0, 0, width, height, 0, height/2 * (performance.now() - lastLost)/300 * 0.95, width, height - height * (performance.now() - lastLost)/300 * 0.9);
@@ -714,6 +713,7 @@ function animate() {
 		
 		if(started == 0) {
 			imageData = ctx.getImageData(0, 0, width, height);
+			offscreen.getContext('2d').putImageData(imageData, 0, 0);
 			lastLost = performance.now();
 		}
 	}
