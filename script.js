@@ -434,9 +434,9 @@ function animate() {
 			offscreen.getContext('2d').putImageData(imageData, 0, 0);
 			// ctx.putImageData(imageData, 0, height/2 * (performance.now() - lastLost)/1000, 0, 0, width, height * (1000 - performance.now() + lastLost)/1000);
 			if(performance.now() - lastLost < 300) {
-				ctx.drawImage(offscreen, 0, 0, width, height, 0, height/2 * (performance.now() - lastLost)/300 * 0.9, width, height - height * (performance.now() - lastLost)/300 * 0.9);
+				ctx.drawImage(offscreen, 0, 0, width, height, 0, height/2 * (performance.now() - lastLost)/300 * 0.95, width, height - height * (performance.now() - lastLost)/300 * 0.9);
 			} else {
-				ctx.drawImage(offscreen, 0, 0, width, height, width/2 * (performance.now() - lastLost - 300)/700, height/2 * 0.9, width - width * (performance.now() - lastLost - 300)/700, height * 0.1);
+				ctx.drawImage(offscreen, 0, 0, width, height, width/2 * (performance.now() - lastLost - 300)/700, height/2 * 0.95, width - width * (performance.now() - lastLost - 300)/700, height * 0.05);
 			}
 		}
 	} else {
@@ -609,8 +609,11 @@ function animate() {
 						if(healthProgress <= 0) {
 							if(started == 1) {
 								death();
+								currentAmbient = "none";
 								document.getElementById('title-text').innerText = "FINAL STATS:\nLONGEST STREAK: " + longestStreak + "\nLEVEL: " + levelTotal;
 								setTimeout(() => { startEl.style.display = 'flex'; }, 1000);
+								heartBeat.stop();
+								tonePlayer.stop();
 							}
 							started = 0;
 						}
