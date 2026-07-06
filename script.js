@@ -67,6 +67,8 @@ const levelEl = document.getElementById('level');
 const levelBar = document.getElementById('level-bar');
 const healthBar = document.getElementById('health-bar');
 
+const offscreen = new CanvasRenderingContext2D();
+
 let width, height;
 let timeScale = 1.0;
 let isDragging = false;
@@ -429,7 +431,9 @@ function animate() {
 		ctx.fillStyle = "black";
 		ctx.fillRect(0, 0, width, height);
 		if(performance.now() - lastLost < 1000) {
+			offscreen.getContext('2d').putImageData(imageData, 0, 0);
 			ctx.putImageData(imageData, 0, height/2 * (performance.now() - lastLost)/1000, 0, 0, width, height * (1000 - performance.now() + lastLost)/1000);
+			ctx.drawImage(offscreen, 0, 0, width, height, 0, height/2 * (performance.now() - lastLost)/1000, width, height * (1000 - performance.now() + lastLost)/1000);
 		}
 	} else {
 		ctx.shadowBlur = 20;
@@ -713,6 +717,8 @@ function animate() {
 function resize() {
 	width = canvas.width = window.innerWidth;
 	height = canvas.height = window.innerHeight;
+	offscreen.width = width;
+	offscreen.height = height;
 	gravityGrid = [];
 	for(let i = 0; i <= Math.ceil(width/36); i++) {
 		tempList = [];
