@@ -702,7 +702,7 @@ function animate() {
 		}
 		
 		if(started == 0) {
-			imageData = getImageData(0, 0, width, height);
+			imageData = ctx.getImageData(0, 0, width, height);
 			lastLost = performance.now();
 		}
 	}
