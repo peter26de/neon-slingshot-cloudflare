@@ -67,6 +67,8 @@ const levelEl = document.getElementById('level');
 const levelBar = document.getElementById('level-bar');
 const healthBar = document.getElementById('health-bar');
 
+const offscreen = new OffscreenCanvas(0, 0);
+
 let width, height;
 let timeScale = 1.0;
 let isDragging = false;
@@ -77,6 +79,8 @@ let gravityGrid;
 let tempList;
 let tempX;
 let tempY;
+let imageData;
+let lastLost = performance.now() - 10000;
 
 let score = 0;
 let longestStreak = 0;
@@ -172,7 +176,7 @@ loadSounds();
 
 // Generic playback helper
 function playSound(buffer, changeShift) {
-  if (!buffer) return;
+  if (!buffer || started == 0) return;
 
   const source = audioCtx.createBufferSource();
   source.buffer = buffer;
@@ -423,281 +427,305 @@ window.addEventListener('pointermove', (e) => {
 // window.addEventListener('pointermove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
 function animate() {
-	ctx.shadowBlur = 20;
-	timeScale = isDragging ? 0.2 : 1.0;
-	if(blackAlerted == 0 && score >= 10) {
-		alertedAt = Date.now();
-		blackAlerted = 1;
-		suspense();
-	}
-	if(blackAlerted == 1) {
-		if(Date.now() - alertedAt > 7000) {
-			ctx.fillStyle = 'rgba(39, 92, 118, 1)';
-			blackAlerted = 2;
-		} else {
-			const ctxFillColor = 10 * Math.sin(Date.now() / 30) * Math.sin((Date.now() - alertedAt) / 7000 * Math.PI) * flashesEnabled;
-			ctx.fillStyle = 'rgba(' + (39 + ctxFillColor) + ', ' + (92 + ctxFillColor) + ', ' + (118 + ctxFillColor) + ', 1)';
+	if(started == 0) {
+		ctx.fillStyle = "black";
+		ctx.fillRect(0, 0, width, height);
+		if(performance.now() - lastLost < 1000) {
+			// ctx.putImageData(imageData, 0, height/2 * (performance.now() - lastLost)/1000, 0, 0, width, height * (1000 - performance.now() + lastLost)/1000);
+			if(performance.now() - lastLost < 300) {
+				ctx.drawImage(offscreen, 0, 0, width, height, 0, height/2 * (performance.now() - lastLost)/300 * 0.95, width, height - height * (performance.now() - lastLost)/300 * 0.9);
+			} else {
+				ctx.drawImage(offscreen, 0, 0, width, height, width/2 * (performance.now() - lastLost - 300)/700, height/2 * 0.95, width - width * (performance.now() - lastLost - 300)/700, height * 0.05);
+			}
 		}
 	} else {
-		ctx.fillStyle = 'rgba(39, 92, 118, 1)';
-	}
-	
-	ctx.fillRect(0, 0, width, height);
-	
-	for(let i = enemies.length - 1; i >= 0; i--) {
-		if(enemies[i].x < -100 || enemies[i].x > width + 100 || enemies[i].y < -100 || enemies[i].y > height + 100) {
-			enemies.splice(i, 1);
+		ctx.shadowBlur = 20;
+		timeScale = isDragging ? 0.2 : 1.0;
+		if(blackAlerted == 0 && score >= 10) {
+			alertedAt = Date.now();
+			blackAlerted = 1;
+			suspense();
 		}
-	}
-	ctx.beginPath();
-	ctx.shadowBlur = 0;
-	ctx.lineWidth = 1;
-	ctx.lineCap = "butt";
-	ctx.strokeStyle = "black";
-	for(let i = 0; i < gravityGrid.length - 1; i++) {
-		for(let j = 0; j < gravityGrid[0].length - 1; j++) {
-			tempX = gravityGrid[i][j][0];
-			tempY = gravityGrid[i][j][1];
-			enemies.forEach((en, k) => {
-				if(en.deadly == 0) return;
-				if((en.x - gravityGrid[i][j][0])**2 + (en.y - gravityGrid[i][j][1])**2 > 0) {
-					tempX += (en.x - gravityGrid[i][j][0]) * Math.min(0.5, 200 * en.radius / ((en.x - gravityGrid[i][j][0])**2 + (en.y - gravityGrid[i][j][1])**2)**1.5);
-					tempY += (en.y - gravityGrid[i][j][1]) * Math.min(0.5, 200 * en.radius / ((en.x - gravityGrid[i][j][0])**2 + (en.y - gravityGrid[i][j][1])**2)**1.5);
-				}
-			});
-			gravityGrid[i][j][0] = tempX;
-			gravityGrid[i][j][1] = tempY;
+		if(blackAlerted == 1) {
+			if(Date.now() - alertedAt > 7000) {
+				ctx.fillStyle = 'rgba(39, 92, 118, 1)';
+				blackAlerted = 2;
+			} else {
+				const ctxFillColor = 10 * Math.sin(Date.now() / 30) * Math.sin((Date.now() - alertedAt) / 7000 * Math.PI) * flashesEnabled;
+				ctx.fillStyle = 'rgba(' + (39 + ctxFillColor) + ', ' + (92 + ctxFillColor) + ', ' + (118 + ctxFillColor) + ', 1)';
+			}
+		} else {
+			ctx.fillStyle = 'rgba(39, 92, 118, 1)';
 		}
-	}
-	for(let i = 0; i < gravityGrid.length - 1; i++) {
-		for(let j = 0; j < gravityGrid[0].length - 1; j++) {
-			enemies.forEach((en, k) => {
-				if(en.deadly == 0) return;
-				gravityGrid[i][j][2] = Math.max(gravityGrid[i][j][2], 1 - Math.sqrt((gravityGrid[i][j][0] - en.x)**2 + (gravityGrid[i][j][1] - en.y)**2)/en.radius/4);
-			});
+		
+		ctx.fillRect(0, 0, width, height);
+		
+		for(let i = enemies.length - 1; i >= 0; i--) {
+			if(enemies[i].x < -100 || enemies[i].x > width + 100 || enemies[i].y < -100 || enemies[i].y > height + 100) {
+				enemies.splice(i, 1);
+			}
 		}
-	}
-	for(let i = 0; i < gravityGrid.length - 1; i++) {
-		for(let j = 0; j < gravityGrid[0].length - 1; j++) {
-			ctx.strokeStyle = "rgba(20, 20, 20, " + gravityGrid[i][j][2] + ")";
-			ctx.moveTo(gravityGrid[i][j][0], gravityGrid[i][j][1]);
-			ctx.lineTo(gravityGrid[i][j + 1][0], gravityGrid[i][j + 1][1]);
-			ctx.moveTo(gravityGrid[i][j][0], gravityGrid[i][j][1]);
-			ctx.lineTo(gravityGrid[i + 1][j][0], gravityGrid[i + 1][j][1]);
+		ctx.beginPath();
+		ctx.shadowBlur = 0;
+		ctx.lineWidth = 1;
+		ctx.lineCap = "butt";
+		ctx.strokeStyle = "black";
+		for(let i = 0; i < gravityGrid.length - 1; i++) {
+			for(let j = 0; j < gravityGrid[0].length - 1; j++) {
+				tempX = gravityGrid[i][j][0];
+				tempY = gravityGrid[i][j][1];
+				enemies.forEach((en, k) => {
+					if(en.deadly == 0) return;
+					if((en.x - gravityGrid[i][j][0])**2 + (en.y - gravityGrid[i][j][1])**2 > 0) {
+						tempX += (en.x - gravityGrid[i][j][0]) * Math.min(0.5, 200 * en.radius / ((en.x - gravityGrid[i][j][0])**2 + (en.y - gravityGrid[i][j][1])**2)**1.5);
+						tempY += (en.y - gravityGrid[i][j][1]) * Math.min(0.5, 200 * en.radius / ((en.x - gravityGrid[i][j][0])**2 + (en.y - gravityGrid[i][j][1])**2)**1.5);
+					}
+				});
+				gravityGrid[i][j][0] = tempX;
+				gravityGrid[i][j][1] = tempY;
+			}
+		}
+		for(let i = 0; i < gravityGrid.length - 1; i++) {
+			for(let j = 0; j < gravityGrid[0].length - 1; j++) {
+				enemies.forEach((en, k) => {
+					if(en.deadly == 0) return;
+					gravityGrid[i][j][2] = Math.max(gravityGrid[i][j][2], 1 - Math.sqrt((gravityGrid[i][j][0] - en.x)**2 + (gravityGrid[i][j][1] - en.y)**2)/en.radius/4);
+				});
+			}
+		}
+		for(let i = 0; i < gravityGrid.length - 1; i++) {
+			for(let j = 0; j < gravityGrid[0].length - 1; j++) {
+				ctx.strokeStyle = "rgba(20, 20, 20, " + gravityGrid[i][j][2] + ")";
+				ctx.moveTo(gravityGrid[i][j][0], gravityGrid[i][j][1]);
+				ctx.lineTo(gravityGrid[i][j + 1][0], gravityGrid[i][j + 1][1]);
+				ctx.moveTo(gravityGrid[i][j][0], gravityGrid[i][j][1]);
+				ctx.lineTo(gravityGrid[i + 1][j][0], gravityGrid[i + 1][j][1]);
+				ctx.stroke();
+				ctx.beginPath();
+				gravityGrid[i][j][2] = 0;
+			}
+		}
+		for(let i = 0; i < gravityGrid.length - 1; i++) {
+			ctx.strokeStyle = "rgba(20, 20, 20, " + gravityGrid[i][gravityGrid[0].length - 1][2] + ")";
+			ctx.moveTo(gravityGrid[i][gravityGrid[0].length - 1][0], gravityGrid[i][gravityGrid[0].length - 1][1]);
+			ctx.lineTo(gravityGrid[i + 1][gravityGrid[0].length - 1][0], gravityGrid[i + 1][gravityGrid[0].length - 1][1]);
 			ctx.stroke();
 			ctx.beginPath();
-			gravityGrid[i][j][2] = 0;
 		}
-	}
-	for(let i = 0; i < gravityGrid.length - 1; i++) {
-		ctx.strokeStyle = "rgba(20, 20, 20, " + gravityGrid[i][gravityGrid[0].length - 1][2] + ")";
-		ctx.moveTo(gravityGrid[i][gravityGrid[0].length - 1][0], gravityGrid[i][gravityGrid[0].length - 1][1]);
-		ctx.lineTo(gravityGrid[i + 1][gravityGrid[0].length - 1][0], gravityGrid[i + 1][gravityGrid[0].length - 1][1]);
-		ctx.stroke();
-		ctx.beginPath();
-	}
-	for(let i = 0; i < gravityGrid[0].length - 1; i++) {
-		ctx.strokeStyle = "rgba(20, 20, 20, " + gravityGrid[gravityGrid.length - 1][i][2] + ")";
-		ctx.moveTo(gravityGrid[gravityGrid.length - 1][i][0], gravityGrid[gravityGrid.length - 1][i][1]);
-		ctx.lineTo(gravityGrid[gravityGrid.length - 1][i + 1][0], gravityGrid[gravityGrid.length - 1][i + 1][1]);
-		ctx.stroke();
-		ctx.beginPath();
-	}
-	ctx.stroke();
-	for(let i = 0; i < gravityGrid.length - 1; i++) {
-		for(let j = 0; j < gravityGrid[0].length - 1; j++) {
-			gravityGrid[i][j][0] = width / Math.ceil(width/36) * i;
-			gravityGrid[i][j][1] = height / Math.ceil(height/36) * j;
+		for(let i = 0; i < gravityGrid[0].length - 1; i++) {
+			ctx.strokeStyle = "rgba(20, 20, 20, " + gravityGrid[gravityGrid.length - 1][i][2] + ")";
+			ctx.moveTo(gravityGrid[gravityGrid.length - 1][i][0], gravityGrid[gravityGrid.length - 1][i][1]);
+			ctx.lineTo(gravityGrid[gravityGrid.length - 1][i + 1][0], gravityGrid[gravityGrid.length - 1][i + 1][1]);
+			ctx.stroke();
+			ctx.beginPath();
 		}
-	}
-	
-	timePassed = 0;
-	
-	player.oldX = player.x;
-	player.oldY = player.y;
-	while(timePassed < nextFrame - lastFrame) {
-		trueDelta = nextFrame - lastFrame - timePassed;
+		ctx.stroke();
+		for(let i = 0; i < gravityGrid.length - 1; i++) {
+			for(let j = 0; j < gravityGrid[0].length - 1; j++) {
+				gravityGrid[i][j][0] = width / Math.ceil(width/36) * i;
+				gravityGrid[i][j][1] = height / Math.ceil(height/36) * j;
+			}
+		}
 		
-		if(player.vx * player.vx + player.vy * player.vy > 0 && performance.now() < nextFrame + (nextFrame - lastFrame) * 1) trueDelta = Math.min(trueDelta, 1 / Math.sqrt(player.vx * player.vx + player.vy * player.vy));
-	
-		// for(let i = 0; i < enemies.length; i++) {
-		// 	if(enemies[i].v > 0) trueDelta = Math.min(trueDelta, 1 / enemies[i].v);
-		// }
+		timePassed = 0;
 		
-		if(player.isLaunching) {
-			player.x += player.vx * timeScale * trueDelta * difficulty * 0.06;
-			player.y += player.vy * timeScale * trueDelta * difficulty * 0.06;
-			player.vx *= 0.99**( trueDelta * difficulty * 0.06);
-			player.vy *= 0.99**( trueDelta * difficulty * 0.06);
-			if(player.x < 0 || player.x > width || player.y < 0 || player.y > height) {
-				ctx.beginPath();
-				ctx.shadowBlur = 5;
-				ctx.moveTo(player.oldX, player.oldY);
-				ctx.lineTo(player.x, player.y);
-				ctx.lineWidth = 2 * player.radius;
-				ctx.lineCap = "round";
-				ctx.strokeStyle = player.color;
-				ctx.stroke();
-	
-				player.oldX = player.x;
-				player.oldY = player.y;
-				
-				if(Math.random() < 0.05) {
-					player.vx /= 20;
-					player.vy /= 20;
-					wallStuck();
+		player.oldX = player.x;
+		player.oldY = player.y;
+		while(timePassed < nextFrame - lastFrame) {
+			trueDelta = nextFrame - lastFrame - timePassed;
+			
+			if(player.vx * player.vx + player.vy * player.vy > 0 && performance.now() < nextFrame + (nextFrame - lastFrame) * 1) trueDelta = Math.min(trueDelta, 1 / Math.sqrt(player.vx * player.vx + player.vy * player.vy));
+		
+			// for(let i = 0; i < enemies.length; i++) {
+			// 	if(enemies[i].v > 0) trueDelta = Math.min(trueDelta, 1 / enemies[i].v);
+			// }
+			
+			if(player.isLaunching) {
+				player.x += player.vx * timeScale * trueDelta * difficulty * 0.06;
+				player.y += player.vy * timeScale * trueDelta * difficulty * 0.06;
+				player.vx *= 0.99**( trueDelta * difficulty * 0.06);
+				player.vy *= 0.99**( trueDelta * difficulty * 0.06);
+				if(player.x < 0 || player.x > width || player.y < 0 || player.y > height) {
+					ctx.beginPath();
+					ctx.shadowBlur = 5;
+					ctx.moveTo(player.oldX, player.oldY);
+					ctx.lineTo(player.x, player.y);
+					ctx.lineWidth = 2 * player.radius;
+					ctx.lineCap = "round";
+					ctx.strokeStyle = player.color;
+					ctx.stroke();
+		
+					player.oldX = player.x;
+					player.oldY = player.y;
+					
+					if(Math.random() < 0.05) {
+						player.vx /= 20;
+						player.vy /= 20;
+						wallStuck();
+					}
+				}
+				if(player.x < 0) {
+					player.vx = Math.abs(player.vx);
+					player.x = 0;
+				}
+				if(player.x > width) {
+					player.vx = -Math.abs(player.vx);
+					player.x = width;
+				}
+				if(player.y < 0) {
+					player.vy = Math.abs(player.vy);
+					player.y = 0;
+				}
+				if(player.y > height) {
+					player.vy = -Math.abs(player.vy);
+					player.y = height;
 				}
 			}
-			if(player.x < 0) {
-				player.vx = Math.abs(player.vx);
-				player.x = 0;
-			}
-			if(player.x > width) {
-				player.vx = -Math.abs(player.vx);
-				player.x = width;
-			}
-			if(player.y < 0) {
-				player.vy = Math.abs(player.vy);
-				player.y = 0;
-			}
-			if(player.y > height) {
-				player.vy = -Math.abs(player.vy);
-				player.y = height;
-			}
-		}
 
-		enemies.forEach((en, i) => {
-			en.update();
-			if(timePassed == 0) en.draw();
-			const dx = player.x - en.x;
-			const dy = player.y - en.y;
-			if(Math.sqrt(dx*dx + dy*dy) < en.radius + player.radius) {
-				ctx.beginPath();
-				ctx.shadowBlur = 5;
-				ctx.moveTo(player.oldX, player.oldY);
-				ctx.lineTo(player.x, player.y);
-				ctx.lineWidth = 2 * player.radius;
-				ctx.lineCap = "round";
-				ctx.strokeStyle = player.color;
-				ctx.stroke();
-	
-				player.oldX = player.x;
-				player.oldY = player.y;
-				
-				if(en.deadly == 1) {
-					score = 0;
-					sendInteger(score);
-					difficulty = Math.max(difficulty / 1.5, 1);
-					healthProgress = Math.max(healthProgress - 25, 0);
-					if(healthProgress <= 0) {
-						if(started == 1) {
-							death();
-							document.getElementById('title-text').innerText = "FINAL STATS:\nLONGEST STREAK: " + longestStreak + "\nLEVEL: " + levelTotal;
-						}
-						startEl.style.display = 'flex';
-						started = 0;
-					}
-					if(flashesEnabled == 1) {
-						flashNow = performance.now();
-					}
-				} else {
-					if(en.clicks > 0) {
-						score += 1;
-						longestStreak = Math.max(score, longestStreak);
+			enemies.forEach((en, i) => {
+				en.update();
+				if(timePassed == 0) en.draw();
+				const dx = player.x - en.x;
+				const dy = player.y - en.y;
+				if(Math.sqrt(dx*dx + dy*dy) < en.radius + player.radius) {
+					ctx.beginPath();
+					ctx.shadowBlur = 5;
+					ctx.moveTo(player.oldX, player.oldY);
+					ctx.lineTo(player.x, player.y);
+					ctx.lineWidth = 2 * player.radius;
+					ctx.lineCap = "round";
+					ctx.strokeStyle = player.color;
+					ctx.stroke();
+		
+					player.oldX = player.x;
+					player.oldY = player.y;
+					
+					if(en.deadly == 1) {
+						score = 0;
 						sendInteger(score);
-						difficulty *= 1.5**0.05;
-						if(levelProgress < 90) {
-							levelProgress += 10;
-						} else {
-							levelUp();
-							levelProgress = 0;
-							levelTotal++;
-							levelEl.innerText = levelTotal;
+						difficulty = Math.max(difficulty / 1.5, 1);
+						healthProgress = Math.max(healthProgress - 25, 0);
+						if(healthProgress <= 0) {
+							if(started == 1) {
+								death();
+								currentAmbient = "none";
+								document.getElementById('title-text').innerText = "FINAL STATS:\nLONGEST STREAK: " + longestStreak + "\nLEVEL: " + levelTotal;
+								setTimeout(() => { startEl.style.display = 'flex'; }, 1000);
+								heartBeat.stop();
+								tonePlayer.stop();
+							}
+							started = 0;
 						}
-						healthProgress = Math.min(healthProgress + 2, 100);
+						if(flashesEnabled == 1) {
+							flashNow = performance.now();
+						}
+					} else {
+						if(en.clicks > 0) {
+							score += 1;
+							longestStreak = Math.max(score, longestStreak);
+							sendInteger(score);
+							difficulty *= 1.5**0.05;
+							if(levelProgress < 90) {
+								levelProgress += 10;
+							} else {
+								levelUp();
+								levelProgress = 0;
+								levelTotal++;
+								levelEl.innerText = levelTotal;
+							}
+							healthProgress = Math.min(healthProgress + 2, 100);
+						}
+						if(dx*dx + dy*dy > 0) {
+							const dvx = player.vx - en.vx;
+							const dvy = player.vy - en.vy;
+							const nvx = dx / Math.sqrt(dx*dx + dy*dy);
+							const nvy = dy / Math.sqrt(dx*dx + dy*dy);
+							const dot = dvx * nvx + dvy * nvy;
+							player.vx -= 2 * dot * nvx;
+							player.vy -= 2 * dot * nvy;
+						}
 					}
-					if(dx*dx + dy*dy > 0) {
-						const dvx = player.vx - en.vx;
-						const dvy = player.vy - en.vy;
-						const nvx = dx / Math.sqrt(dx*dx + dy*dy);
-						const nvy = dy / Math.sqrt(dx*dx + dy*dy);
-						const dot = dvx * nvx + dvy * nvy;
-						player.vx -= 2 * dot * nvx;
-						player.vy -= 2 * dot * nvy;
+					levelBar.style.width = levelProgress + '%';
+					healthBar.style.width = healthProgress + '%';
+					lowHealth.style.display = healthProgress <= 25 ? "inline" : "none";
+					if (currentAmbient == "tone" && healthProgress <= 25) {
+						heartBeat.stop();
+						tonePlayer.stop();
+						heartBeat.start(Tone.now());
+						currentAmbient = "heart";
 					}
+					if (currentAmbient == "heart" && healthProgress > 25) {
+						heartBeat.stop();
+						tonePlayer.stop();
+						tonePlayer.start(Tone.now());
+						currentAmbient = "tone";
+					}
+					scoreEl.innerText = score;
+					if(audioInitialized) en.deadly == 0 ? redOrb() : blackOrb();
+					enemies[i].reset();
+				} else if(en.deadly == 1 && dx*dx + dy*dy > 0) {
+					player.vx -= dx * width * width / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta * difficulty * 0.06;
+					player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta * difficulty * 0.06;
 				}
-				levelBar.style.width = levelProgress + '%';
-				healthBar.style.width = healthProgress + '%';
-				lowHealth.style.display = healthProgress <= 25 ? "inline" : "none";
-				if (currentAmbient == "tone" && healthProgress <= 25) {
-					heartBeat.stop();
-					tonePlayer.stop();
-					heartBeat.start(Tone.now());
-					currentAmbient = "heart";
-				}
-				if (currentAmbient == "heart" && healthProgress > 25) {
-					heartBeat.stop();
-					tonePlayer.stop();
-					tonePlayer.start(Tone.now());
-					currentAmbient = "tone";
-				}
-				scoreEl.innerText = score;
-				if(audioInitialized) en.deadly == 0 ? redOrb() : blackOrb();
-				enemies[i].reset();
-			} else if(en.deadly == 1 && dx*dx + dy*dy > 0) {
-				player.vx -= dx * width * width / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta * difficulty * 0.06;
-				player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta * difficulty * 0.06;
-			}
-		});
-		
-		timePassed += trueDelta;
-	}
-
-	if(nextFrame - lastFrame > 0) {
-		fpsEl.innerText = (1000 / (nextFrame - lastFrame)).toFixed(1);
-		lastFrame = nextFrame;
-	}
-	nextFrame = performance.now();
-
-	ctx.beginPath();
-	ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-	ctx.fillStyle = player.color;
-	ctx.shadowBlur = 20;
-	ctx.shadowColor = player.color;
-	ctx.fill();
-	
-	ctx.beginPath();
-	ctx.shadowBlur = 10;
-	ctx.moveTo(player.oldX, player.oldY);
-	ctx.lineTo(player.x, player.y);
-	ctx.lineWidth = 2 * player.radius;
-	ctx.lineCap = "round";
-	ctx.strokeStyle = player.color;
-	ctx.stroke();
-	
-	if(Date.now() - lastTime > 1000 / difficulty) {
-		enemies.push(new Enemy());
-		lastTime = Date.now();
-	}
-
-	if(performance.now() - flashNow < 100) {
-		currentCanvas = ctx.getImageData(0, 0, width, height);
-		const data32 = new Int32Array(currentCanvas.data.buffer);
-		//for(let i = 0; i < currentCanvas.data.length; i = (i % 4 != 2 ? i + 1 : i + 2)) {
-		//	currentCanvas.data[i] = 255 - currentCanvas[i];
-		//}
-		for (let i = 0; i < data32.length; i++) {
-			data32[i] ^= 0x00FFFFFF; 
+			});
+			
+			timePassed += trueDelta;
 		}
-		ctx.putImageData(currentCanvas, 0, 0);
+
+		if(nextFrame - lastFrame > 0) {
+			fpsEl.innerText = (1000 / (nextFrame - lastFrame)).toFixed(1);
+			lastFrame = nextFrame;
+		}
+		nextFrame = performance.now();
+
+		ctx.beginPath();
+		ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+		ctx.fillStyle = player.color;
+		ctx.shadowBlur = 20;
+		ctx.shadowColor = player.color;
+		ctx.fill();
+		
+		ctx.beginPath();
+		ctx.shadowBlur = 10;
+		ctx.moveTo(player.oldX, player.oldY);
+		ctx.lineTo(player.x, player.y);
+		ctx.lineWidth = 2 * player.radius;
+		ctx.lineCap = "round";
+		ctx.strokeStyle = player.color;
+		ctx.stroke();
+		
+		if(Date.now() - lastTime > 1000 / difficulty) {
+			enemies.push(new Enemy());
+			lastTime = Date.now();
+		}
+
+		if(performance.now() - flashNow < 100) {
+			currentCanvas = ctx.getImageData(0, 0, width, height);
+			const data32 = new Int32Array(currentCanvas.data.buffer);
+			//for(let i = 0; i < currentCanvas.data.length; i = (i % 4 != 2 ? i + 1 : i + 2)) {
+			//	currentCanvas.data[i] = 255 - currentCanvas[i];
+			//}
+			for (let i = 0; i < data32.length; i++) {
+				data32[i] ^= 0x00FFFFFF; 
+			}
+			ctx.putImageData(currentCanvas, 0, 0);
+		}
+		
+		if(started == 0) {
+			imageData = ctx.getImageData(0, 0, width, height);
+			offscreen.getContext('2d').putImageData(imageData, 0, 0);
+			lastLost = performance.now();
+		}
 	}
-	
+		
     requestAnimationFrame(animate);
 }
 
 function resize() {
 	width = canvas.width = window.innerWidth;
 	height = canvas.height = window.innerHeight;
+	offscreen.width = width;
+	offscreen.height = height;
 	gravityGrid = [];
 	for(let i = 0; i <= Math.ceil(width/36); i++) {
 		tempList = [];
