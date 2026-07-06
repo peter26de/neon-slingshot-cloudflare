@@ -433,7 +433,11 @@ function animate() {
 		if(performance.now() - lastLost < 1000) {
 			offscreen.getContext('2d').putImageData(imageData, 0, 0);
 			// ctx.putImageData(imageData, 0, height/2 * (performance.now() - lastLost)/1000, 0, 0, width, height * (1000 - performance.now() + lastLost)/1000);
-			ctx.drawImage(offscreen, 0, 0, width, height, 0, height/2 * (performance.now() - lastLost)/1000, width, height * (1000 - performance.now() + lastLost)/1000);
+			if(performance.now() - lastLost < 300) {
+				ctx.drawImage(offscreen, 0, 0, width, height, 0, height/2 * (performance.now() - lastLost)/300 * 0.9, width, height - height * (performance.now() - lastLost)/300 * 0.9);
+			} else {
+				ctx.drawImage(offscreen, 0, 0, width, height, width/2 * (performance.now() - lastLost - 300)/700, height/2 * 0.9, width - width * (performance.now() - lastLost - 300)/700, height * 0.1);
+			}
 		}
 	} else {
 		ctx.shadowBlur = 20;
