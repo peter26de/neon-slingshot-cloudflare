@@ -67,7 +67,7 @@ const levelEl = document.getElementById('level');
 const levelBar = document.getElementById('level-bar');
 const healthBar = document.getElementById('health-bar');
 
-const offscreen = new CanvasRenderingContext2D();
+const offscreen = new OffscreenCanvas(0, 0);
 
 let width, height;
 let timeScale = 1.0;
