@@ -432,7 +432,7 @@ function animate() {
 		ctx.fillRect(0, 0, width, height);
 		if(performance.now() - lastLost < 1000) {
 			offscreen.getContext('2d').putImageData(imageData, 0, 0);
-			ctx.putImageData(imageData, 0, height/2 * (performance.now() - lastLost)/1000, 0, 0, width, height * (1000 - performance.now() + lastLost)/1000);
+			// ctx.putImageData(imageData, 0, height/2 * (performance.now() - lastLost)/1000, 0, 0, width, height * (1000 - performance.now() + lastLost)/1000);
 			ctx.drawImage(offscreen, 0, 0, width, height, 0, height/2 * (performance.now() - lastLost)/1000, width, height * (1000 - performance.now() + lastLost)/1000);
 		}
 	} else {
