@@ -564,7 +564,9 @@ function animate() {
 		
 					player.oldX = player.x;
 					player.oldY = player.y;
-					
+
+					player.vx *= 2 * Math.random() - 1;
+					player.vy *= 2 * Math.random() - 1;
 					if(Math.random() < 0.05) {
 						player.vx /= 20;
 						player.vy /= 20;
