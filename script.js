@@ -307,6 +307,13 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 	levelBar.style.width = levelProgress + '%';
 	levelEl.innerText = 0;
 	healthBar.style.width = healthProgress + '%';
+	lastFrame = performance.now();
+	nextFrame = performance.now() + 1000/60;
+	for(let i = enemies.length - 1; i >= 0; i--) {
+		if(enemies[i].deadly == 1) {
+			enemies.splice(i, 1);
+		}
+	}
 });
 document.getElementById('flashes-btn').addEventListener('click', function() {
 	flashesEnabled = 1 - flashesEnabled;
@@ -610,7 +617,6 @@ function animate() {
 								death();
 								currentAmbient = "none";
 								document.getElementById('title-text').innerText = "FINAL STATS:\nLONGEST STREAK: " + longestStreak + "\nLEVEL: " + levelTotal;
-								setTimeout(() => { startEl.style.display = 'flex'; }, 1000);
 								heartBeat.stop();
 								tonePlayer.stop();
 							}
@@ -715,6 +721,7 @@ function animate() {
 			imageData = ctx.getImageData(0, 0, width, height);
 			offscreen.getContext('2d').putImageData(imageData, 0, 0);
 			lastLost = performance.now();
+			setTimeout(() => { startEl.style.display = 'flex'; }, 1000);
 		}
 	}
 		
