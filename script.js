@@ -61,7 +61,8 @@ const scoreEl = document.getElementById('score');
 const rivalEl = document.getElementById('rival');
 const webrtcEl = document.getElementById('webrtc-btn');
 const webrtcDialog = document.getElementById('webrtc-dialog');
-const fpsEl = document.getElementById('fps');
+const frameTimeEl = document.getElementById('frameTime');
+const physicsTimeEl = document.getElementById('physicsTime');
 const lowHealth = document.getElementById('lowHealth');
 const levelEl = document.getElementById('level');
 const levelBar = document.getElementById('level-bar');
@@ -540,6 +541,7 @@ function animate() {
 			if (performance.now() <= lastPhysics) continue;
 			trueDelta = performance.now() - lastPhysics;
 			lastPhysics = performance.now();
+			frameTimeEl.innerText = (trueDelta * 1000).toFixed(1);
 			trueDelta *= timeScale * difficulty * 0.06;
 			
 			if(player.isLaunching) {
@@ -671,7 +673,7 @@ function animate() {
 		} while (performance.now() < nextFrame + (nextFrame - lastFrame) / 2);
 
 		if(nextFrame - lastFrame > 0) {
-			fpsEl.innerText = (1000 / (nextFrame - lastFrame)).toFixed(1);
+			frameTimeEl.innerText = (nextFrame - lastFrame).toFixed(1);
 			lastFrame = nextFrame;
 		}
 		nextFrame = performance.now();
