@@ -444,6 +444,16 @@ function animate() {
 			} else {
 				ctx.drawImage(offscreen, 0, 0, width, height, width/2 * (performance.now() - lastLost - 300)/700, height/2 * 0.95, width - width * (performance.now() - lastLost - 300)/700, height * 0.05);
 			}
+
+			currentCanvas = ctx.getImageData(0, 0, width, height);
+			const data32 = new Int32Array(currentCanvas.data.buffer);
+			//for(let i = 0; i < currentCanvas.data.length; i = (i % 4 != 2 ? i + 1 : i + 2)) {
+			//	currentCanvas.data[i] = 255 - currentCanvas[i];
+			//}
+			for (let i = 0; i < data32.length; i++) {
+				data32[i] ^= (0x00FFFFFF * (Math.random < ((performance.now() - lastLost) / 1000) ? 1 : 0));
+			}
+			ctx.putImageData(currentCanvas, 0, 0);
 		}
 	} else {
 		ctx.shadowBlur = 20;
