@@ -100,6 +100,7 @@ let difficulty = 1;
 let levelProgress = 0;
 let levelTotal = 0;
 let healthProgress = 100;
+// let averageFrameTime = 0;
 
 //function shot() {
 //	if(blackAlerted != 1) {
@@ -670,7 +671,7 @@ function animate() {
 					player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta;
 				}
 			});
-		} while (performance.now() < nextFrame + (nextFrame - lastFrame) * 1 - 0.1);
+		} while (performance.now() < nextFrame + (nextFrame - lastFrame) * 0.5 - 0.1);
 
 		if(nextFrame - lastFrame > 0) {
 			frameTimeEl.innerText = (nextFrame - lastFrame).toFixed(1);
