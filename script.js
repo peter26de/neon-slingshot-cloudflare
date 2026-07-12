@@ -670,7 +670,7 @@ function animate() {
 					player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta;
 				}
 			});
-		} while (performance.now() < nextFrame + (nextFrame - lastFrame) * 1);
+		} while (performance.now() < nextFrame + (nextFrame - lastFrame) * 1 - 0.1);
 
 		if(nextFrame - lastFrame > 0) {
 			frameTimeEl.innerText = (nextFrame - lastFrame).toFixed(1);
