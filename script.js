@@ -89,12 +89,13 @@ let lastTime = Date.now();
 let lastFrame = performance.now();
 let nextFrame = performance.now() + 1000/60;
 let trueDelta = 0;
-let timePassed;
+let lastPhysics = performance.now();
 let blackAlerted = 0;
 let alertedAt;
 let flashesEnabled = 0;
 let flashNow = performance.now() - 1000;
-let currentCanvas;
+let currentCanvas = ctx.getImageData(0, 0, width, height);
+const data32 = new Int32Array(currentCanvas.data.buffer);
 let difficulty = 1;
 let levelProgress = 0;
 let levelTotal = 0;
@@ -240,10 +241,10 @@ class Enemy {
 		this.createdAt = performance.now();
 	}
 	update() {
-		this.x += this.vx * timeScale * 2 * trueDelta * difficulty * 0.06;
-		this.y += this.vy * timeScale * 2 * trueDelta * difficulty * 0.06;
-		this.vx += (this.x - player.x) * (this.deadly == 0 ? 0.06 : 0) * this.clicks / width * trueDelta * difficulty * 0.06;
-		this.vy += (this.y - player.y) * (this.deadly == 0 ? 0.06 : 0) * this.clicks / height * trueDelta * difficulty * 0.06;
+		this.x += this.vx * trueDelta * 2;
+		this.y += this.vy * trueDelta * 2;
+		this.vx += (this.x - player.x) * (this.deadly == 0 ? 0.06 : 0) * this.clicks / width * trueDelta;
+		this.vy += (this.y - player.y) * (this.deadly == 0 ? 0.06 : 0) * this.clicks / height * trueDelta;
 		this.v = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
 	}
 	draw() {
@@ -534,24 +535,19 @@ function animate() {
 			}
 		}
 		
-		timePassed = 0;
-		
 		player.oldX = player.x;
 		player.oldY = player.y;
-		while(timePassed < nextFrame - lastFrame) {
-			trueDelta = nextFrame - lastFrame - timePassed;
-			
-			if(player.vx * player.vx + player.vy * player.vy > 0 && performance.now() < nextFrame + (nextFrame - lastFrame) * 1) trueDelta = Math.min(trueDelta, 1 / Math.sqrt(player.vx * player.vx + player.vy * player.vy));
-		
-			// for(let i = 0; i < enemies.length; i++) {
-			// 	if(enemies[i].v > 0) trueDelta = Math.min(trueDelta, 1 / enemies[i].v);
-			// }
+		do {
+			if (performance.now() <= lastPhysics) continue;
+			trueDelta = performance.now() - lastPhysics;
+			lastPhysics = performance.now();
+			trueDelta *= timeScale * difficulty * 0.06;
 			
 			if(player.isLaunching) {
-				player.x += player.vx * timeScale * trueDelta * difficulty * 0.06;
-				player.y += player.vy * timeScale * trueDelta * difficulty * 0.06;
-				player.vx *= 0.99**( trueDelta * difficulty * 0.06);
-				player.vy *= 0.99**( trueDelta * difficulty * 0.06);
+				player.x += player.vx * trueDelta;
+				player.y += player.vy * trueDelta;
+				player.vx *= 0.99**( trueDelta);
+				player.vy *= 0.99**( trueDelta);
 				if(player.x < 0 || player.x > width || player.y < 0 || player.y > height) {
 					ctx.beginPath();
 					ctx.shadowBlur = 5;
@@ -570,28 +566,27 @@ function animate() {
 						player.vy /= 20;
 						wallStuck();
 					}
-				}
-				if(player.x < 0) {
-					player.vx = Math.abs(player.vx);
-					player.x = 0;
-				}
-				if(player.x > width) {
-					player.vx = -Math.abs(player.vx);
-					player.x = width;
-				}
-				if(player.y < 0) {
-					player.vy = Math.abs(player.vy);
-					player.y = 0;
-				}
-				if(player.y > height) {
-					player.vy = -Math.abs(player.vy);
-					player.y = height;
+					if(player.x < 0) {
+						player.vx = Math.abs(player.vx);
+						player.x = 0;
+					}
+					if(player.x > width) {
+						player.vx = -Math.abs(player.vx);
+						player.x = width;
+					}
+					if(player.y < 0) {
+						player.vy = Math.abs(player.vy);
+						player.y = 0;
+					}
+					if(player.y > height) {
+						player.vy = -Math.abs(player.vy);
+						player.y = height;
+					}
 				}
 			}
 
 			enemies.forEach((en, i) => {
 				en.update();
-				if(timePassed == 0) en.draw();
 				const dx = player.x - en.x;
 				const dy = player.y - en.y;
 				if(Math.sqrt(dx*dx + dy*dy) < en.radius + player.radius) {
@@ -670,13 +665,11 @@ function animate() {
 					if(audioInitialized) en.deadly == 0 ? redOrb() : blackOrb();
 					enemies[i].reset();
 				} else if(en.deadly == 1 && dx*dx + dy*dy > 0) {
-					player.vx -= dx * width * width / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta * difficulty * 0.06;
-					player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta * difficulty * 0.06;
+					player.vx -= dx * width * width / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta;
+					player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta;
 				}
 			});
-			
-			timePassed += trueDelta;
-		}
+		} while (performance.now() < nextFrame + (nextFrame - lastFrame));
 
 		if(nextFrame - lastFrame > 0) {
 			fpsEl.innerText = (1000 / (nextFrame - lastFrame)).toFixed(1);
@@ -684,6 +677,9 @@ function animate() {
 		}
 		nextFrame = performance.now();
 
+		enemies.forEach((en, i) => {
+			en.draw();
+		});
 		ctx.beginPath();
 		ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
 		ctx.fillStyle = player.color;
