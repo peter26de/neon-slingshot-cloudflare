@@ -94,8 +94,7 @@ let blackAlerted = 0;
 let alertedAt;
 let flashesEnabled = 0;
 let flashNow = performance.now() - 1000;
-let currentCanvas = ctx.getImageData(0, 0, width, height);
-const data32 = new Int32Array(currentCanvas.data.buffer);
+let currentCanvas = null;
 let difficulty = 1;
 let levelProgress = 0;
 let levelTotal = 0;
@@ -701,6 +700,10 @@ function animate() {
 			lastTime = Date.now();
 		}
 
+		if(currentCanvas == null) {
+			currentCanvas = ctx.getImageData(0, 0, width, height);
+			const data32 = new Int32Array(currentCanvas.data.buffer);
+		}
 		if(performance.now() - flashNow < 100) {
 			currentCanvas = ctx.getImageData(0, 0, width, height);
 			const data32 = new Int32Array(currentCanvas.data.buffer);
