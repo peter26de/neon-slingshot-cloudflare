@@ -541,7 +541,7 @@ function animate() {
 			if (performance.now() <= lastPhysics) continue;
 			trueDelta = performance.now() - lastPhysics;
 			lastPhysics = performance.now();
-			frameTimeEl.innerText = (trueDelta * 1000).toFixed(1);
+			physicsTimeEl.innerText = (trueDelta * 1000).toFixed(1);
 			trueDelta *= timeScale * difficulty * 0.06;
 			
 			if(player.isLaunching) {
