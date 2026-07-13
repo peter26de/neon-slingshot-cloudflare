@@ -545,6 +545,7 @@ function animate() {
 		physicsTimeEl.innerText = (physicalDelta * 1000).toFixed(1);
 		trueDelta = physicalDelta * timeScale * difficulty * 0.06;
 		do {
+			lastPhysics += physicalDelta;
 			if(player.isLaunching) {
 				player.x += player.vx * trueDelta;
 				player.y += player.vy * trueDelta;
