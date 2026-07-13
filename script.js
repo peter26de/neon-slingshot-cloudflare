@@ -538,11 +538,11 @@ function animate() {
 		
 		player.oldX = player.x;
 		player.oldY = player.y;
+		console.log(performance.now() - lastPhysics);
 		do {
-			trueDelta = Math.max(performance.now() - lastPhysics, 1/200);
+			trueDelta = Math.max(performance.now() - lastPhysics - 1, 1/200);
 			lastPhysics += trueDelta;
 			physicsTimeEl.innerText = (trueDelta * 1000).toFixed(1);
-			console.log(trueDelta);
 			trueDelta *= timeScale * difficulty * 0.06;
 			
 			if(player.isLaunching) {
