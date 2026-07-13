@@ -90,6 +90,8 @@ let lastTime = Date.now();
 let lastFrame = performance.now();
 let nextFrame = performance.now() + 1000/60;
 let trueDelta = 0;
+let physicalIterations = 1;
+let physicalDelta = 0;
 let lastPhysics = performance.now();
 let blackAlerted = 0;
 let alertedAt;
@@ -538,11 +540,13 @@ function animate() {
 		
 		player.oldX = player.x;
 		player.oldY = player.y;
+		physicalDelta = (performance.now() - lastPhysics) / physicalIterations;
+		physicalIterations = 0;
+		physicsTimeEl.innerText = (physicalDelta * 1000).toFixed(1);
+		trueDelta = physicalDelta * timeScale * difficulty * 0.06;
 		do {
-			trueDelta = (performance.now() - lastPhysics) / 200;
-			lastPhysics += trueDelta;
-			physicsTimeEl.innerText = (trueDelta * 1000).toFixed(1);
-			trueDelta *= timeScale * difficulty * 0.06;
+			physicalIterations++;
+			lastPhysics += physicalDelta;
 			
 			if(player.isLaunching) {
 				player.x += player.vx * trueDelta;
@@ -670,8 +674,10 @@ function animate() {
 					player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta;
 				}
 			});
-		} while (performance.now() < nextFrame + Math.min((nextFrame - lastFrame) * 0.5, 1000));
+		} while (performance.now() < nextFrame + Math.min((nextFrame - lastFrame) * 0.5, 1000) && lastPhysics < nextFrame + nextFrame - lastFrame);
 
+		if(performance.now() < nextFrame + Math.min((nextFrame - lastFrame) * 0.5, 1000)) physicalIterations *= 2;
+		
 		if(nextFrame - lastFrame > 0) {
 			frameTimeEl.innerText = (nextFrame - lastFrame).toFixed(1);
 			lastFrame = nextFrame;
