@@ -678,7 +678,7 @@ function animate() {
 			});
 		} while (performance.now() < nextFrame + Math.min((nextFrame - lastFrame) * 1 + frameDeviation, 1000) && lastPhysics < nextFrame + nextFrame - lastFrame);
 
-		if(performance.now() < nextFrame + Math.min((nextFrame - lastFrame) * 1 + frameDeviation, 1000)) physicalIterations *= 2;
+		if(performance.now() < nextFrame + Math.min((nextFrame - lastFrame) * 1 + frameDeviation, 1000)) physicalIterations++;
 		
 		if(nextFrame - lastFrame > 0) {
 			frameTimeEl.innerText = (nextFrame - lastFrame).toFixed(1);
