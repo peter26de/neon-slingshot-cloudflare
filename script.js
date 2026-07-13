@@ -539,7 +539,7 @@ function animate() {
 		player.oldX = player.x;
 		player.oldY = player.y;
 		do {
-			trueDelta = Math.max((performance.now() - lastPhysics) * 2, 1/200);
+			trueDelta = (performance.now() - lastPhysics) / 200;
 			lastPhysics += trueDelta;
 			physicsTimeEl.innerText = (trueDelta * 1000).toFixed(1);
 			trueDelta *= timeScale * difficulty * 0.06;
@@ -670,7 +670,7 @@ function animate() {
 					player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta;
 				}
 			});
-		} while (performance.now() < nextFrame + Math.min((nextFrame - lastFrame) * 0.5, 1000) && lastPhysics < nextFrame + nextFrame - lastFrame);
+		} while (performance.now() < nextFrame + Math.min((nextFrame - lastFrame) * 0.5, 1000));
 
 		if(nextFrame - lastFrame > 0) {
 			frameTimeEl.innerText = (nextFrame - lastFrame).toFixed(1);
