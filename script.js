@@ -542,6 +542,7 @@ function animate() {
 			trueDelta = Math.max(performance.now() - lastPhysics, 1/200);
 			lastPhysics += trueDelta;
 			physicsTimeEl.innerText = (trueDelta * 1000).toFixed(1);
+			console.log(trueDelta);
 			trueDelta *= timeScale * difficulty * 0.06;
 			
 			if(player.isLaunching) {
