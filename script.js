@@ -541,7 +541,7 @@ function animate() {
 		
 		player.oldX = player.x;
 		player.oldY = player.y;
-		physicalDelta *= lastFrameTime / Math.max(lastFrameTime - performance.now() + lastPhysics, 0.5**(lastFrameTime / 1000));
+		physicalDelta *= lastFrameTime / Math.max(lastFrameTime - performance.now() + lastPhysics, 0.5)**(lastFrameTime / 1000);
 		lastPhysics = performance.now();
 		physicsTimeEl.innerText = (physicalDelta * 1000).toFixed(1);
 		trueDelta = physicalDelta * timeScale * difficulty * 0.06;
