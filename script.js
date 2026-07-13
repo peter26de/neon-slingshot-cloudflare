@@ -92,6 +92,8 @@ let nextFrame = performance.now() + 1000/60;
 let trueDelta = 0;
 let physicalIterations = 1;
 let physicalDelta = 0;
+let frameDeviation = 0;
+let lastFrameTime = 1000/60;
 let lastPhysics = performance.now();
 let blackAlerted = 0;
 let alertedAt;
@@ -674,9 +676,9 @@ function animate() {
 					player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta;
 				}
 			});
-		} while (performance.now() < nextFrame + Math.min((nextFrame - lastFrame) * 0.5, 1000) && lastPhysics < nextFrame + nextFrame - lastFrame);
+		} while (performance.now() < nextFrame + Math.min((nextFrame - lastFrame) * 1 + frameDeviation, 1000) && lastPhysics < nextFrame + nextFrame - lastFrame);
 
-		if(performance.now() < nextFrame + Math.min((nextFrame - lastFrame) * 0.5, 1000)) physicalIterations *= 2;
+		if(performance.now() < nextFrame + Math.min((nextFrame - lastFrame) * 1 + frameDeviation, 1000)) physicalIterations *= 2;
 		
 		if(nextFrame - lastFrame > 0) {
 			frameTimeEl.innerText = (nextFrame - lastFrame).toFixed(1);
@@ -684,6 +686,9 @@ function animate() {
 		}
 		nextFrame = performance.now();
 
+		frameDeviation += (lastFrameTime - (nextFrame - lastFrame)) / 2;
+		lastFrameTime = nextFrame - lastFrame;
+		
 		enemies.forEach((en, i) => {
 			en.draw();
 		});
