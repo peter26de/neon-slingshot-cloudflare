@@ -544,10 +544,10 @@ function animate() {
 		do {
 			if(performance.now() <= lastPhysics) {
 				lastPhysics = performance.now();
+				console.log("continued!");
 				continue;
 			}
 			physicalDelta = performance.now() - lastPhysics;
-			console.log(physicalDelta);
 			lastPhysics = performance.now();
 			trueDelta = physicalDelta * timeScale * difficulty * 0.06;
 			if(player.isLaunching) {
