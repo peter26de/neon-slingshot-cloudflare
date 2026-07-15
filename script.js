@@ -542,8 +542,12 @@ function animate() {
 		player.oldX = player.x;
 		player.oldY = player.y;
 		do {
-			if(performance.now() - lastPhysics <= 0) continue;
+			if(performance.now() <= lastPhysics) {
+				performance.now() = lastPhysics;
+				continue;
+			}
 			physicalDelta = performance.now() - lastPhysics;
+			console.log(physicalDelta);
 			lastPhysics = performance.now();
 			trueDelta = physicalDelta * timeScale * difficulty * 0.06;
 			if(player.isLaunching) {
@@ -682,7 +686,7 @@ function animate() {
 		}
 		nextFrame = performance.now();
 
-		frameDeviation += (lastFrameTime - (nextFrame - lastFrame)) / 2 - Math.abs((lastFrameTime - (nextFrame - lastFrame)) / 100);
+		frameDeviation += (lastFrameTime - (nextFrame - lastFrame)) / 2;
 		lastFrameTime = nextFrame - lastFrame;
 		
 		enemies.forEach((en, i) => {
