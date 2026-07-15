@@ -682,7 +682,7 @@ function animate() {
 		}
 		nextFrame = performance.now();
 
-		frameDeviation += (lastFrameTime - (nextFrame - lastFrame)) / 2 - Math.abs((lastFrameTime - (nextFrame - lastFrame)) / 3);
+		frameDeviation += (lastFrameTime - (nextFrame - lastFrame)) / 2 - Math.abs((lastFrameTime - (nextFrame - lastFrame)) / 100);
 		lastFrameTime = nextFrame - lastFrame;
 		
 		enemies.forEach((en, i) => {
