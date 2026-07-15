@@ -90,7 +90,7 @@ let lastTime = Date.now();
 let lastFrame = performance.now();
 let nextFrame = performance.now() + 1000/60;
 let trueDelta = 0;
-let physicalDelta = 1/200;
+let physicalDelta = 0;
 let frameDeviation = 0;
 let lastFrameTime = 1000/60;
 let lastPhysics = performance.now();
@@ -541,12 +541,11 @@ function animate() {
 		
 		player.oldX = player.x;
 		player.oldY = player.y;
-		physicalDelta *= (lastFrameTime / Math.max(lastFrameTime - performance.now() + lastPhysics, 0.5))**(Math.min(lastFrameTime, 1000) / 1000);
-		lastPhysics = performance.now();
-		physicsTimeEl.innerText = (physicalDelta * 1000).toFixed(1);
-		trueDelta = physicalDelta * timeScale * difficulty * 0.06;
 		do {
-			lastPhysics += physicalDelta;
+			if(performance.now() - lastPhysics <= 0) continue;
+			physicalDelta = performance.now() - lastPhysics;
+			lastPhysics = performance.now();
+			trueDelta = physicalDelta * timeScale * difficulty * 0.06;
 			if(player.isLaunching) {
 				player.x += player.vx * trueDelta;
 				player.y += player.vy * trueDelta;
@@ -675,13 +674,15 @@ function animate() {
 			});
 		} while (performance.now() < nextFrame + Math.min((nextFrame - lastFrame) * 1 + frameDeviation, 1000));
 		
+		physicsTimeEl.innerText = (physicalDelta * 1000).toFixed(1);
+		
 		if(nextFrame - lastFrame > 0) {
 			frameTimeEl.innerText = (nextFrame - lastFrame).toFixed(1);
 			lastFrame = nextFrame;
 		}
 		nextFrame = performance.now();
 
-		frameDeviation += (lastFrameTime - (nextFrame - lastFrame)) / 2;
+		frameDeviation += (lastFrameTime - (nextFrame - lastFrame)) / 2 - Math.abs((lastFrameTime - (nextFrame - lastFrame)) / 3);
 		lastFrameTime = nextFrame - lastFrame;
 		
 		enemies.forEach((en, i) => {
