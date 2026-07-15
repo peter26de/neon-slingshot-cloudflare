@@ -677,7 +677,7 @@ function animate() {
 			});
 		} while (performance.now() < nextFrame + Math.min((nextFrame - lastFrame) * 1 + frameDeviation, 1000));
 		
-		physicsTimeEl.innerText = (physicalDelta / 1000).toExponential(1);
+		physicsTimeEl.innerText = physicalDelta.toExponential(1);
 		
 		if(nextFrame - lastFrame > 0) {
 			frameTimeEl.innerText = (nextFrame - lastFrame).toFixed(1);
