@@ -543,7 +543,7 @@ function animate() {
 		player.oldY = player.y;
 		do {
 			if(performance.now() <= lastPhysics) {
-				performance.now() = lastPhysics;
+				lastPhysics = performance.now();
 				continue;
 			}
 			physicalDelta = performance.now() - lastPhysics;
