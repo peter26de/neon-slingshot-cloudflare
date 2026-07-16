@@ -62,7 +62,6 @@ const rivalEl = document.getElementById('rival');
 const webrtcEl = document.getElementById('webrtc-btn');
 const webrtcDialog = document.getElementById('webrtc-dialog');
 const frameTimeEl = document.getElementById('frameTime');
-const physicsTimeEl = document.getElementById('physicsTime');
 const lowHealth = document.getElementById('lowHealth');
 const levelEl = document.getElementById('level');
 const levelBar = document.getElementById('level-bar');
@@ -91,8 +90,6 @@ let lastFrame = performance.now();
 let nextFrame = performance.now() + 1000/60;
 let trueDelta = 0;
 let physicalDelta = 0;
-let frameDeviation = 0;
-let lastFrameTime = 1000/60;
 let lastPhysics = performance.now();
 let blackAlerted = 0;
 let alertedAt;
@@ -541,11 +538,9 @@ function animate() {
 		
 		player.oldX = player.x;
 		player.oldY = player.y;
-		do {
-			if(performance.now() <= lastPhysics) {
-				lastPhysics = performance.now();
-				continue;
-			}
+		if(performance.now() <= lastPhysics) {
+			lastPhysics = performance.now();
+		} else {
 			physicalDelta = performance.now() - lastPhysics;
 			lastPhysics = performance.now();
 			trueDelta = physicalDelta * timeScale * difficulty * 0.06;
@@ -675,18 +670,13 @@ function animate() {
 					player.vy -= dy * height * height / 10000 / (dx*dx + dy*dy)**1.5 * en.radius * trueDelta;
 				}
 			});
-		} while (performance.now() < nextFrame + Math.min((nextFrame - lastFrame) * 1 + frameDeviation, 1000));
-		
-		physicsTimeEl.innerText = physicalDelta.toExponential(1);
+		}
 		
 		if(nextFrame - lastFrame > 0) {
 			frameTimeEl.innerText = (nextFrame - lastFrame).toFixed(1);
 			lastFrame = nextFrame;
 		}
 		nextFrame = performance.now();
-
-		frameDeviation += (lastFrameTime - (nextFrame - lastFrame)) / 2;
-		lastFrameTime = nextFrame - lastFrame;
 		
 		enemies.forEach((en, i) => {
 			en.draw();
