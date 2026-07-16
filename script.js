@@ -550,17 +550,6 @@ function animate() {
 				player.vx *= 0.99**( trueDelta);
 				player.vy *= 0.99**( trueDelta);
 				if(player.x < 0 || player.x > width || player.y < 0 || player.y > height) {
-					ctx.beginPath();
-					ctx.shadowBlur = 5;
-					ctx.moveTo(player.oldX, player.oldY);
-					ctx.lineTo(player.x, player.y);
-					ctx.lineWidth = 2 * player.radius;
-					ctx.lineCap = "round";
-					ctx.strokeStyle = player.color;
-					ctx.stroke();
-		
-					player.oldX = player.x;
-					player.oldY = player.y;
 
 					if(Math.random() < 0.05) {
 						player.vx /= 20;
@@ -591,18 +580,6 @@ function animate() {
 				const dx = player.x - en.x;
 				const dy = player.y - en.y;
 				if(Math.sqrt(dx*dx + dy*dy) < en.radius + player.radius) {
-					ctx.beginPath();
-					ctx.shadowBlur = 5;
-					ctx.moveTo(player.oldX, player.oldY);
-					ctx.lineTo(player.x, player.y);
-					ctx.lineWidth = 2 * player.radius;
-					ctx.lineCap = "round";
-					ctx.strokeStyle = player.color;
-					ctx.stroke();
-		
-					player.oldX = player.x;
-					player.oldY = player.y;
-					
 					if(en.deadly == 1) {
 						score = 0;
 						sendInteger(score);
