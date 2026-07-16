@@ -319,7 +319,6 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 			enemies.splice(i, 1);
 		}
 	}
-	frameDeviation = 0;
 });
 document.getElementById('flashes-btn').addEventListener('click', function() {
 	flashesEnabled = 1 - flashesEnabled;
@@ -680,6 +679,15 @@ function animate() {
 		
 		physicsTimeEl.innerText = physicalDelta.toExponential(1);
 		
+		if(nextFrame - lastFrame > 0) {
+			frameTimeEl.innerText = (nextFrame - lastFrame).toFixed(1);
+			lastFrame = nextFrame;
+		}
+		nextFrame = performance.now();
+
+		frameDeviation += (lastFrameTime - (nextFrame - lastFrame)) / 2;
+		lastFrameTime = nextFrame - lastFrame;
+		
 		enemies.forEach((en, i) => {
 			en.draw();
 		});
@@ -723,15 +731,6 @@ function animate() {
 			setTimeout(() => { startEl.style.display = 'flex'; }, 1000);
 		}
 	}
-		
-	if(nextFrame - lastFrame > 0) {
-		frameTimeEl.innerText = (nextFrame - lastFrame).toFixed(1);
-		lastFrame = nextFrame;
-	}
-	nextFrame = performance.now();
-
-	frameDeviation = Math.min((frameDeviation + lastFrameTime - (nextFrame - lastFrame)) / 2, 0);
-	lastFrameTime = nextFrame - lastFrame;
 		
     requestAnimationFrame(animate);
 }
