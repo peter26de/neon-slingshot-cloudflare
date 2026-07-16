@@ -319,6 +319,7 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 			enemies.splice(i, 1);
 		}
 	}
+	frameDeviation = 0;
 });
 document.getElementById('flashes-btn').addEventListener('click', function() {
 	flashesEnabled = 1 - flashesEnabled;
@@ -428,7 +429,6 @@ window.addEventListener('pointerdown', (e) => {
 		}
 		isDragging = false;
 		for(let i in enemies) enemies[i].clicks++;
-		frameDeviation = 0;
 	}
 });
 
