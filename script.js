@@ -436,6 +436,7 @@ window.addEventListener('pointermove', (e) => {
 // window.addEventListener('pointermove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
 function animate() {
+	player.color = flashesEnabled == 1 && healthProgress <= 25 && player.color == "#38bdf8" ? "#ff00ff" : "#38bdf8";
 	if(started == 0) {
 		ctx.fillStyle = "black";
 		ctx.fillRect(0, 0, width, height);
